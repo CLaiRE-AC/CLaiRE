@@ -10,7 +10,8 @@ export default class Ask extends Command {
   static description = "Send a prompt to OpenAI and maintain conversation history";
 
   static flags = {
-    prompt: Flags.string({ char: "p", description: "Prompt to send", required: true }),
+    prompt: Flags.string({ char: "p", description: "Prompt to send" }),
+    inputFile: Flags.string({ char: "F", description: "Path to a file containing the question input" }),
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
     save: Flags.boolean({ char: "s", description: "Save conversation history automatically" }),
     readHistory: Flags.boolean({ char: "r", description: "Include entire conversation history in context" }),
@@ -25,6 +26,29 @@ export default class Ask extends Command {
 
     if (!apiKey) {
       this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");
+    }
+
+    // Ensure either --prompt or --input-file is provided, but not both
+    if (!flags.prompt && !flags.inputFile) {
+      this.error("You must provide a prompt using --prompt (-p) or specify an input file using --input-file (-F).");
+    }
+    if (flags.prompt && flags.inputFile) {
+      this.error("You cannot use both --prompt (-p) and --input-file (-F) at the same time.");
+    }
+
+    let question: string = flags.prompt ?? ""; // Ensure a default empty string
+
+    // Read question from file if --input-file is provided
+    if (flags.inputFile) {
+      const filePath = path.resolve(flags.inputFile);
+      if (!fs.existsSync(filePath)) {
+        this.error(`Input file not found: ${filePath}`);
+      }
+      question = fs.readFileSync(filePath, "utf-8").trim();
+    }
+
+    if (!question) {
+      this.error("No question provided. Use --prompt (-p) or --input-file (-F).");
     }
 
     let historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
@@ -59,9 +83,8 @@ export default class Ask extends Command {
       }
     }
 
-
     // Add the new user question
-    messages.push({ role: "user", content: flags.prompt });
+    messages.push({ role: "user", content: question });
 
     try {
       const response = await axios.post(
