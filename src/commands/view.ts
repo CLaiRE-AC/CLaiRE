@@ -1,54 +1,57 @@
 import { Command, Flags } from "@oclif/core";
 import fs from "fs";
-import chalk from "chalk";
+import path from "path";
+import inquirer from "inquirer";
 import { getHistoryFilePath } from "../utils/config.js";
-
-type ConversationEntry = {
-  role: "user" | "assistant";
-  content: string;
-};
+import { formatCodeBlocks } from "../utils/codeFormatter.js";
 
 export default class View extends Command {
-  static description = "View conversation history from a saved JSON file.";
+  static description = "View saved questions interactively and display responses.";
 
   static flags = {
-    questionsOnly: Flags.boolean({
-      char: "q",
-      description: "Show only user questions",
-      default: false,
-    }),
-    last: Flags.integer({
-      char: "l",
-      description: "Show only the last X number of entries",
-      default: undefined,
-    }),
+    file: Flags.string({ char: "f", description: "Path to conversation history file", default: getHistoryFilePath() }),
   };
 
   async run() {
     const { flags } = await this.parse(View);
-    const filePath = getHistoryFilePath();
+    const historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
 
-    if (!fs.existsSync(filePath)) {
-      this.error(`Error: Conversation file not found at ${filePath}`);
+    if (!fs.existsSync(historyFile)) {
+      this.error(`No conversation history found at ${historyFile}.`);
     }
 
-    const history: ConversationEntry[] = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    const data = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
 
-    // Filter history based on flags
-    let filteredHistory = history;
+    const questions = data
+      .map((entry: any, index: number) => (entry.role === "user" ? { name: entry.content, value: index } : null))
+      .filter(Boolean);
 
-    if (flags.questionsOnly) {
-      filteredHistory = filteredHistory.filter((entry) => entry.role === "user");
+    if (questions.length === 0) {
+      this.log("No questions found in the conversation history.");
+      return;
     }
 
-    if (flags.last !== undefined && flags.last > 0) {
-      filteredHistory = filteredHistory.slice(-flags.last);
+    const { selectedIndex } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "selectedIndex",
+        message: "Select a question to view its response:",
+        choices: questions,
+        pageSize: 10, // Allows scrolling
+      },
+    ]);
+
+    // Find the next "assistant" response after the selected question
+    let response = "No response found.";
+    for (let i = selectedIndex + 1; i < data.length; i++) {
+      if (data[i].role === "assistant") {
+        response = data[i].content;
+        break;
+      } else if (data[i].role === "user") {
+        break; // Stop searching if another user entry is found
+      }
     }
 
-    // Display the filtered history
-    filteredHistory.forEach((entry) => {
-      const prefix = entry.role === "user" ? chalk.blue("User:") : chalk.green("Assistant:");
-      this.log(`${prefix} ${entry.content}\n`);
-    });
+    this.log(`\nResponse:\n${formatCodeBlocks(response)}\n`);
   }
 }

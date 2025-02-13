@@ -13,7 +13,8 @@
     "@oclif/plugin-plugins": "^5",
     "axios": "^1.7.9",
     "chalk": "^5.4.1",
-    "cli-highlight": "^2.1.11"
+    "cli-highlight": "^2.1.11",
+    "inquirer": "^12.4.1"
   },
   "devDependencies": {
     "@eslint/compat": "^1",
