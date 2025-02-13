@@ -7,14 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { loadConfig } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
-
-// ESM workaround for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// TODO: Modify code to save file in users home directory $HOME/.claire/logs
-// const HIST_FILE = path.join(os.homedir(), ".history.json");
-const HIST_FILE = path.resolve(__dirname, "../../history.json");
+import { getHistoryFilePath } from "../utils/config.js";
 
 export default class Ask extends Command {
   static description = "Send a prompt to OpenAI and maintain conversation history";
@@ -23,7 +16,8 @@ export default class Ask extends Command {
     prompt: Flags.string({ char: "p", description: "Prompt to send", required: true }),
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
     save: Flags.boolean({ char: "s", description: "Save conversation history" }),
-    file: Flags.string({ char: "f", description: "Optional file path to save conversation history", default: HIST_FILE }),
+    readHistory: Flags.boolean({ char: "r", description: "Include conversation history in context" }),
+    file: Flags.string({ char: "f", description: "Optional file path to save conversation history", default: getHistoryFilePath() }),
   };
 
   async run() {
@@ -32,15 +26,15 @@ export default class Ask extends Command {
     const apiKey = config.openai_api_key;
     let historyFile = null;
 
-    if (flags.save) {
-      historyFile = flags.file ? path.resolve(flags.file) : HIST_FILE;
+    if (flags.save || flags.readHistory) {
+      historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
     }
 
     if (!apiKey) {
       this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");
     }
 
-    let messages = this.loadConversation(historyFile);
+    let messages = this.loadConversation(getHistoryFilePath());
     messages.push({ role: "user", content: flags.prompt });
 
     try {
