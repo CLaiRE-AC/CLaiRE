@@ -30,7 +30,11 @@ export default class Ask extends Command {
     const { flags } = await this.parse(Ask);
     const config = loadConfig();
     const apiKey = config.openai_api_key;
-    const historyFile = flags.save && flags.file ? path.resolve(flags.file) : HIST_FILE;
+    let historyFile = null;
+
+    if (flags.save) {
+      historyFile = flags.file ? path.resolve(flags.file) : HIST_FILE;
+    }
 
     if (!apiKey) {
       this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");

@@ -2,40 +2,46 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 
-const CONFIG_PATH = path.join(os.homedir(), ".claire.json");
+const CONFIG_FILE = path.join(os.homedir(), ".claire", "config.json");
 
 export type ConfigData = {
   openai_api_key?: string;
   email?: string;
+  history_file?: string;
 };
 
 /**
  * Load existing config or return an empty object.
  */
-export function loadConfig(): ConfigData {
-  if (!fs.existsSync(CONFIG_PATH)) return {};
-  
+export function loadConfig(): Record<string, any> {
+  if (!fs.existsSync(CONFIG_FILE)) return {};
   try {
-    const data = fs.readFileSync(CONFIG_PATH, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.warn("⚠️ Failed to read config file.");
+    return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
+  } catch {
     return {};
   }
 }
 
 /**
- * Save or update config values.
+ * Save configuration
  */
-export function saveConfig(newData: Partial<ConfigData>): void {
-  const existingConfig = loadConfig();
-  const updatedConfig = { ...existingConfig, ...newData };
+export function saveConfig(newConfig: Record<string, any>) {
+  const config = { ...loadConfig(), ...newConfig };
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+}
 
-  try {
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(updatedConfig, null, 2), "utf-8");
-    console.log("✅ Configuration saved.");
-  } catch (error) {
-    console.error("❌ Failed to save configuration.");
-  }
+/**
+ * Get the conversation history file path
+ */
+export function getHistoryFilePath(): string {
+  const config = loadConfig();
+  return path.join(os.homedir(), ".claire", config.history_file) || path.join(os.homedir(), ".claire", "history.json");
+}
+
+/**
+ * Set the conversation history file path
+ */
+export function setHistoryFilePath(fileName: string) {
+  saveConfig({ history_file: fileName });
 }
 
