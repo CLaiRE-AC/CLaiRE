@@ -65,6 +65,7 @@
   "repository": "https://github.com/netuoso/claire/claire",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
+    "bk": "npm run build && npm link",
     "lint": "eslint",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
