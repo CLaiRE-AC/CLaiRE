@@ -12,8 +12,9 @@ export default class Ask extends Command {
   static flags = {
     prompt: Flags.string({ char: "p", description: "Prompt to send", required: true }),
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
-    save: Flags.boolean({ char: "s", description: "Save conversation history without prompting" }),
-    readHistory: Flags.boolean({ char: "r", description: "Include conversation history in context" }),
+    save: Flags.boolean({ char: "s", description: "Save conversation history automatically" }),
+    readHistory: Flags.boolean({ char: "r", description: "Include entire conversation history in context" }),
+    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" }),
     file: Flags.string({ char: "f", description: "Optional file path to save conversation history", default: getHistoryFilePath() }),
   };
 
@@ -29,6 +30,37 @@ export default class Ask extends Command {
     let historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
     let messages = flags.readHistory ? this.loadConversation(historyFile) : [];
 
+    // Interactive mode: Let the user pick specific previous questions
+    if (flags.interactive && fs.existsSync(historyFile)) {
+      const history = this.loadConversation(historyFile);
+      const questions = history
+        .map((entry, index) => (entry.role === "user" ? { name: entry.content, value: index } : undefined))
+        .filter((entry): entry is { name: string; value: number } => entry !== undefined); // Explicit type assertion
+
+      if (questions.length > 0) {
+        const { selectedIndices } = await inquirer.prompt([
+          {
+            type: "checkbox",
+            name: "selectedIndices",
+            message: "Select previous questions to include in context:",
+            choices: questions,
+            pageSize: 10,
+          },
+        ]);
+
+        // Add selected questions and their responses to the context
+        for (const index of selectedIndices) {
+          messages.push(history[index]);
+          const responseIndex = index + 1;
+          if (responseIndex < history.length && history[responseIndex].role === "assistant") {
+            messages.push(history[responseIndex]);
+          }
+        }
+      }
+    }
+
+
+    // Add the new user question
     messages.push({ role: "user", content: flags.prompt });
 
     try {
