@@ -29,8 +29,8 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`claire hello PERSON`](#claire-hello-person)
-* [`claire hello world`](#claire-hello-world)
+* [`claire ask`](#claire-ask)
+* [`claire config`](#claire-config)
 * [`claire help [COMMAND]`](#claire-help-command)
 * [`claire plugins`](#claire-plugins)
 * [`claire plugins add PLUGIN`](#claire-plugins-add-plugin)
@@ -43,47 +43,45 @@ USAGE
 * [`claire plugins unlink [PLUGIN]`](#claire-plugins-unlink-plugin)
 * [`claire plugins update`](#claire-plugins-update)
 
-## `claire hello PERSON`
+## `claire ask`
 
-Say hello
+Send a prompt to OpenAI and maintain conversation history
 
 ```
 USAGE
-  $ claire hello PERSON -f <value>
-
-ARGUMENTS
-  PERSON  Person to say hello to
+  $ claire ask -p <value> [-m <value>] [-s] [-f <value>]
 
 FLAGS
-  -f, --from=<value>  (required) Who is saying hello
+  -f, --file=<value>    [default: /Users/himnme/Workspace/claire/history.json] Optional file path to save conversation
+                        history
+  -m, --model=<value>   [default: chatgpt-4o-latest] OpenAI model
+  -p, --prompt=<value>  (required) Prompt to send
+  -s, --save            Save conversation history
 
 DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ claire hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
+  Send a prompt to OpenAI and maintain conversation history
 ```
 
-_See code: [src/commands/hello/index.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/hello/index.ts)_
+_See code: [src/commands/ask.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/ask.ts)_
 
-## `claire hello world`
+## `claire config`
 
-Say hello world
+Configure API key and email for automatic use.
 
 ```
 USAGE
-  $ claire hello world
+  $ claire config [-k <value>] [-e <value>] [-s]
+
+FLAGS
+  -e, --email=<value>   Set user email
+  -k, --apiKey=<value>  Set OpenAI API key
+  -s, --show            Show current config
 
 DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ claire hello world
-  hello world! (./src/commands/hello/world.ts)
+  Configure API key and email for automatic use.
 ```
 
-_See code: [src/commands/hello/world.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/hello/world.ts)_
+_See code: [src/commands/config.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/config.ts)_
 
 ## `claire help [COMMAND]`
 
