@@ -12,14 +12,17 @@
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-plugins": "^5",
     "axios": "^1.7.9",
+    "better-sqlite3": "^11.8.1",
     "chalk": "^5.4.1",
     "cli-highlight": "^2.1.11",
-    "inquirer": "^12.4.1"
+    "inquirer": "^12.4.1",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@eslint/compat": "^1",
     "@oclif/prettier-config": "^0.2.1",
     "@oclif/test": "^4",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/chai": "^4",
     "@types/mocha": "^10",
     "@types/node": "^18",
