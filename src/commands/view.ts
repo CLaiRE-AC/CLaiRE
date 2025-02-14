@@ -37,10 +37,9 @@ export default class View extends Command {
 
     if (flags.search) {
       const keyword = flags.search.toLowerCase();
-      questions = questions.filter((q: { name: string }) => 
-        q.name.toLowerCase().includes(keyword.toLowerCase())
+      questions = questions.filter((q: { name: string }) =>
+        q.name.toLowerCase().includes(keyword)
       );
-
 
       if (questions.length === 0) {
         this.log(chalk.yellow(`No questions found containing keyword: "${flags.search}".`));
@@ -59,28 +58,34 @@ export default class View extends Command {
         name: "selectedIndex",
         message: chalk.cyan("Select a question to view its response:"),
         choices: questions,
-        // pageSize: 10,
+        pageSize: 10, // Optimized user experience
       },
     ]);
 
-    let response = "No response found.";
+    let responses: string[] = [];
+
+    // ✅ Fix: Sanitize escaped quotes.
     for (let i = selectedIndex + 1; i < data.length; i++) {
       if (data[i].role === "assistant") {
-        response = data[i].content;
-        break;
+        let sanitizedContent = data[i].content.replace(/\\"/g, '"'); // Unescape quotes
+        responses.push(sanitizedContent);
       } else if (data[i].role === "user") {
-        break;
+        break; // Stop collecting when we hit the next user message
       }
     }
 
     const selectedQuestion = questions.find((q: { name: string; value: number }) => q.value === selectedIndex);
 
     if (selectedQuestion) {
-      this.log(chalk.blue(`\nQuestion:\n${selectedQuestion.name}`));
+      this.log(chalk.blue(`\nQuestion:\n${selectedQuestion.name}\n`));
     } else {
       this.log(chalk.red("Error: Selected question not found."));
     }
 
-    this.log(chalk.green("\nResponse:\n") + formatCodeBlocks(response) + "\n");
+    if (responses.length > 0) {
+      this.log(chalk.green("\nResponse:\n") + formatCodeBlocks(responses.join("\n\n")) + "\n");
+    } else {
+      this.log(chalk.yellow("\nNo response found for this question. The conversation may have been incomplete.\n"));
+    }
   }
 }

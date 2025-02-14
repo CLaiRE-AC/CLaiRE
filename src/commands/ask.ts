@@ -149,16 +149,18 @@ export default class Ask extends Command {
     try {
       let existingMessages: { role: string; content: string }[] = [];
 
-      // Load existing history if file exists
+      // Load existing conversation history if the file exists
       if (fs.existsSync(filePath)) {
         const data = fs.readFileSync(filePath, "utf-8");
         existingMessages = JSON.parse(data);
       }
 
-      // Append new messages while avoiding duplication
-      existingMessages.push(...messages.slice(-2)); // Only append the last question & response
+      // Append only new messages (avoid re-saving duplicates)
+      existingMessages.push(...messages.slice(-2));
 
+      // Save JSON with correct formatting
       fs.writeFileSync(filePath, JSON.stringify(existingMessages, null, 2), "utf-8");
+
       this.log(`Conversation saved to ${filePath}.`);
     } catch (error) {
       this.warn(`Failed to save conversation history to ${filePath}.`);
