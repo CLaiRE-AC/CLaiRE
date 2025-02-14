@@ -6,6 +6,16 @@ import { getHistoryFilePath } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
 import chalk from "chalk";
 
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface ConversationEntry {
+  timestamp: string;
+  messages: Message[];
+}
+
 export default class View extends Command {
   static description = "View saved questions interactively and display responses.";
 
@@ -29,17 +39,32 @@ export default class View extends Command {
       this.error(`No conversation history found at ${historyFile}.`);
     }
 
-    const data = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
+    let historyData: ConversationEntry[];
 
-    let questions = data
-      .map((entry: any, index: number) => (entry.role === "user" ? { name: entry.content, value: index } : null))
-      .filter(Boolean);
+    try {
+      historyData = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
+    } catch (error) {
+      this.error(`Failed to parse conversation history. Ensure ${historyFile} contains valid JSON.`);
+      return;
+    }
+
+    // Flattens all user messages while keeping track of their index in the history
+    let questions = historyData.flatMap((entry, entryIndex) =>
+      entry.messages
+        .map((message, messageIndex) =>
+          message.role === "user"
+            ? {
+                name: message.content,
+                value: { entryIndex, messageIndex },  // Use both indices to locate responses
+              }
+            : null
+        )
+        .filter(Boolean)
+    ) as { name: string; value: { entryIndex: number; messageIndex: number } }[];
 
     if (flags.search) {
       const keyword = flags.search.toLowerCase();
-      questions = questions.filter((q: { name: string }) =>
-        q.name.toLowerCase().includes(keyword)
-      );
+      questions = questions.filter((q) => q.name.toLowerCase().includes(keyword));
 
       if (questions.length === 0) {
         this.log(chalk.yellow(`No questions found containing keyword: "${flags.search}".`));
@@ -62,19 +87,23 @@ export default class View extends Command {
       },
     ]);
 
+    const { entryIndex, messageIndex } = selectedIndex;
+    const selectedEntry = historyData[entryIndex];
+    const selectedMessages = selectedEntry.messages;
+
     let responses: string[] = [];
 
-    // ✅ Fix: Sanitize escaped quotes.
-    for (let i = selectedIndex + 1; i < data.length; i++) {
-      if (data[i].role === "assistant") {
-        let sanitizedContent = data[i].content.replace(/\\"/g, '"'); // Unescape quotes
+    // Collect responses after the selected user message
+    for (let i = messageIndex + 1; i < selectedMessages.length; i++) {
+      if (selectedMessages[i].role === "assistant") {
+        let sanitizedContent = selectedMessages[i].content.replace(/\\(["'])/g, "$1"); // Unescape quotes
         responses.push(sanitizedContent);
-      } else if (data[i].role === "user") {
-        break; // Stop collecting when we hit the next user message
+      } else if (selectedMessages[i].role === "user") {
+        break; // Stop when the next user message is encountered
       }
     }
 
-    const selectedQuestion = questions.find((q: { name: string; value: number }) => q.value === selectedIndex);
+    const selectedQuestion = questions.find((q) => q.value.entryIndex === entryIndex && q.value.messageIndex === messageIndex);
 
     if (selectedQuestion) {
       this.log(chalk.blue(`\nQuestion:\n${selectedQuestion.name}\n`));
