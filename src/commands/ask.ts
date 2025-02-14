@@ -7,7 +7,7 @@ import { loadConfig, getHistoryFilePath } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
 
 export default class Ask extends Command {
-  static description = "Send a prompt to OpenAI and maintain conversation history";
+  static description = "Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.";
 
   static flags = {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
@@ -28,19 +28,59 @@ export default class Ask extends Command {
       this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");
     }
 
-    // Ensure at least one input method is provided
     if (!flags.prompt && !flags.inputFile) {
       this.error("You must provide a prompt using --prompt (-p) or specify an input file using --input-file (-F).");
     }
 
+    let historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
+    let messages = flags.readHistory ? this.loadConversation(historyFile) : [];
+
+    if (flags.interactive && fs.existsSync(historyFile)) {
+      messages = await this.interactiveHistorySelection(historyFile, messages);
+    }
+
+    let question = await this.getInitialQuestion(flags);
+    messages.push({ role: "user", content: question });
+
+    while (true) {
+      const response = await this.getAIResponse(messages, apiKey, flags.model);
+      this.log(formatCodeBlocks(response));
+      messages.push({ role: "assistant", content: response });
+
+      const { followUp } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "followUp",
+          message: "Would you like to ask a follow-up question?",
+          default: false,
+        },
+      ]);
+
+      if (!followUp) break;
+
+      const { followUpQuestion } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "followUpQuestion",
+          message: "Enter your follow-up question:",
+        },
+      ]);
+
+      messages.push({ role: "user", content: followUpQuestion.trim() });
+    }
+
+    if (flags.save || await this.confirmSaveConversation()) {
+      this.saveConversation(messages, historyFile);
+    }
+  }
+
+  private async getInitialQuestion(flags: any): Promise<string> {
     let questionParts: string[] = [];
 
-    // Process --prompt if provided
     if (flags.prompt) {
       questionParts.push(`User prompt:\n${flags.prompt.trim()}`);
     }
 
-    // Process --input-file if provided
     if (flags.inputFile) {
       const filePath = path.resolve(flags.inputFile);
       if (!fs.existsSync(filePath)) {
@@ -50,52 +90,48 @@ export default class Ask extends Command {
       questionParts.push(`Input file (${filePath}):\n${fileContent}`);
     }
 
-    // Construct the full question
     const question = questionParts.join("\n---\n");
-
     if (!question) {
       this.error("No valid question provided after processing inputs.");
     }
 
-    let historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
-    let messages = flags.readHistory ? this.loadConversation(historyFile) : [];
+    return question;
+  }
 
-    // Interactive mode: Let the user pick specific previous questions
-    if (flags.interactive && fs.existsSync(historyFile)) {
-      const history = this.loadConversation(historyFile);
-      const questions = history
-        .map((entry, index) => (entry.role === "user" ? { name: entry.content, value: index } : undefined))
-        .filter((entry): entry is { name: string; value: number } => entry !== undefined);
+  private async interactiveHistorySelection(historyFile: string, messages: any[]) {
+    const history = this.loadConversation(historyFile);
+    const questions = history
+      .map((entry, index) => (entry.role === "user" ? { name: entry.content, value: index } : undefined))
+      .filter((entry): entry is { name: string; value: number } => entry !== undefined);
 
-      if (questions.length > 0) {
-        const { selectedIndices } = await inquirer.prompt([
-          {
-            type: "checkbox",
-            name: "selectedIndices",
-            message: "Select previous questions to include in context:",
-            choices: questions,
-          },
-        ]);
+    if (questions.length > 0) {
+      const { selectedIndices } = await inquirer.prompt([
+        {
+          type: "checkbox",
+          name: "selectedIndices",
+          message: "Select previous questions to include in context:",
+          choices: questions,
+        },
+      ]);
 
-        // Add selected questions and their responses to the context
-        for (const index of selectedIndices) {
-          messages.push(history[index]);
-          const responseIndex = index + 1;
-          if (responseIndex < history.length && history[responseIndex].role === "assistant") {
-            messages.push(history[responseIndex]);
-          }
+      for (const index of selectedIndices) {
+        messages.push(history[index]);
+        const responseIndex = index + 1;
+        if (responseIndex < history.length && history[responseIndex].role === "assistant") {
+          messages.push(history[responseIndex]);
         }
       }
     }
 
-    // Append user question
-    messages.push({ role: "user", content: question });
+    return messages;
+  }
 
+  private async getAIResponse(messages: any[], apiKey: string, model: string): Promise<string> {
     try {
       const response = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
-          model: flags.model,
+          model: model,
           messages: messages,
         },
         {
@@ -106,28 +142,10 @@ export default class Ask extends Command {
         }
       );
 
-      const reply = response.data.choices[0].message.content;
-      this.log(formatCodeBlocks(reply));
-
-      // Ask user whether to save the conversation unless --save is specified
-      if (!flags.save) {
-        const { confirmSave } = await inquirer.prompt([
-          {
-            type: "confirm",
-            name: "confirmSave",
-            message: "Would you like to save this conversation to history?",
-            default: true,
-          },
-        ]);
-
-        if (!confirmSave) return;
-      }
-
-      // Save conversation
-      messages.push({ role: "assistant", content: reply });
-      this.saveConversation(messages, historyFile);
+      return response.data.choices[0].message.content;
     } catch (error: unknown) {
       this.handleError(error);
+      return "An error occurred while fetching a response.";
     }
   }
 
@@ -143,25 +161,43 @@ export default class Ask extends Command {
     }
   }
 
+  private async confirmSaveConversation(): Promise<boolean> {
+    const { confirmSave } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "confirmSave",
+        message: "Would you like to save this conversation to history?",
+        default: true,
+      },
+    ]);
+    return confirmSave;
+  }
+
   private saveConversation(messages: { role: string; content: string }[], filePath: string | null): void {
     if (!filePath) return;
 
-    try {
-      let existingMessages: { role: string; content: string }[] = [];
+    let history: { timestamp: string; messages: { role: string; content: string }[] }[] = [];
 
-      // Load existing conversation history if the file exists
-      if (fs.existsSync(filePath)) {
+    // Load existing history if the file exists
+    if (fs.existsSync(filePath)) {
+      try {
         const data = fs.readFileSync(filePath, "utf-8");
-        existingMessages = JSON.parse(data);
+        history = JSON.parse(data);
+      } catch (error) {
+        this.warn(`Failed to load existing conversation history from ${filePath}. Initializing new history.`);
       }
+    }
 
-      // Append only new messages (avoid re-saving duplicates)
-      existingMessages.push(...messages.slice(-2));
+    // Append the new conversation session with a timestamp
+    const newSession = {
+      timestamp: new Date().toISOString(),
+      messages: messages,
+    };
+    history.push(newSession);
 
-      // Save JSON with correct formatting
-      fs.writeFileSync(filePath, JSON.stringify(existingMessages, null, 2), "utf-8");
-
-      this.log(`Conversation saved to ${filePath}.`);
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(history, null, 2), "utf-8");
+      this.log(`Conversation history updated in ${filePath}.`);
     } catch (error) {
       this.warn(`Failed to save conversation history to ${filePath}.`);
     }
