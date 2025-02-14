@@ -28,27 +28,33 @@ export default class Ask extends Command {
       this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");
     }
 
-    // Ensure either --prompt or --input-file is provided, but not both
+    // Ensure at least one input method is provided
     if (!flags.prompt && !flags.inputFile) {
       this.error("You must provide a prompt using --prompt (-p) or specify an input file using --input-file (-F).");
     }
-    if (flags.prompt && flags.inputFile) {
-      this.error("You cannot use both --prompt (-p) and --input-file (-F) at the same time.");
+
+    let questionParts: string[] = [];
+
+    // Process --prompt if provided
+    if (flags.prompt) {
+      questionParts.push(`User prompt:\n${flags.prompt.trim()}`);
     }
 
-    let question: string = flags.prompt ?? ""; // Ensure a default empty string
-
-    // Read question from file if --input-file is provided
+    // Process --input-file if provided
     if (flags.inputFile) {
       const filePath = path.resolve(flags.inputFile);
       if (!fs.existsSync(filePath)) {
         this.error(`Input file not found: ${filePath}`);
       }
-      question = fs.readFileSync(filePath, "utf-8").trim();
+      const fileContent = fs.readFileSync(filePath, "utf-8").trim();
+      questionParts.push(`Input file (${filePath}):\n${fileContent}`);
     }
 
+    // Construct the full question
+    const question = questionParts.join("\n---\n");
+
     if (!question) {
-      this.error("No question provided. Use --prompt (-p) or --input-file (-F).");
+      this.error("No valid question provided after processing inputs.");
     }
 
     let historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
@@ -59,7 +65,7 @@ export default class Ask extends Command {
       const history = this.loadConversation(historyFile);
       const questions = history
         .map((entry, index) => (entry.role === "user" ? { name: entry.content, value: index } : undefined))
-        .filter((entry): entry is { name: string; value: number } => entry !== undefined); // Explicit type assertion
+        .filter((entry): entry is { name: string; value: number } => entry !== undefined);
 
       if (questions.length > 0) {
         const { selectedIndices } = await inquirer.prompt([
@@ -68,7 +74,6 @@ export default class Ask extends Command {
             name: "selectedIndices",
             message: "Select previous questions to include in context:",
             choices: questions,
-            // pageSize: 10,
           },
         ]);
 
@@ -83,7 +88,7 @@ export default class Ask extends Command {
       }
     }
 
-    // Add the new user question
+    // Append user question
     messages.push({ role: "user", content: question });
 
     try {
@@ -104,7 +109,7 @@ export default class Ask extends Command {
       const reply = response.data.choices[0].message.content;
       this.log(formatCodeBlocks(reply));
 
-      // Prompt user to save conversation if not using --save flag
+      // Ask user whether to save the conversation unless --save is specified
       if (!flags.save) {
         const { confirmSave } = await inquirer.prompt([
           {
