@@ -68,7 +68,7 @@ export default class Ask extends Command {
             name: "selectedIndices",
             message: "Select previous questions to include in context:",
             choices: questions,
-            pageSize: 10,
+            // pageSize: 10,
           },
         ]);
 

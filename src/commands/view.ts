@@ -4,12 +4,21 @@ import path from "path";
 import inquirer from "inquirer";
 import { getHistoryFilePath } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
+import chalk from "chalk";
 
 export default class View extends Command {
   static description = "View saved questions interactively and display responses.";
 
   static flags = {
-    file: Flags.string({ char: "f", description: "Path to conversation history file", default: getHistoryFilePath() }),
+    file: Flags.string({
+      char: "f",
+      description: "Path to conversation history file",
+      default: getHistoryFilePath(),
+    }),
+    search: Flags.string({
+      char: "s",
+      description: "Search for a question containing this keyword",
+    }),
   };
 
   async run() {
@@ -22,12 +31,25 @@ export default class View extends Command {
 
     const data = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
 
-    const questions = data
+    let questions = data
       .map((entry: any, index: number) => (entry.role === "user" ? { name: entry.content, value: index } : null))
       .filter(Boolean);
 
+    if (flags.search) {
+      const keyword = flags.search.toLowerCase();
+      questions = questions.filter((q: { name: string }) => 
+        q.name.toLowerCase().includes(keyword.toLowerCase())
+      );
+
+
+      if (questions.length === 0) {
+        this.log(chalk.yellow(`No questions found containing keyword: "${flags.search}".`));
+        return;
+      }
+    }
+
     if (questions.length === 0) {
-      this.log("No questions found in the conversation history.");
+      this.log(chalk.red("No questions found in the conversation history."));
       return;
     }
 
@@ -35,23 +57,30 @@ export default class View extends Command {
       {
         type: "list",
         name: "selectedIndex",
-        message: "Select a question to view its response:",
+        message: chalk.cyan("Select a question to view its response:"),
         choices: questions,
-        pageSize: 10, // Allows scrolling
+        // pageSize: 10,
       },
     ]);
 
-    // Find the next "assistant" response after the selected question
     let response = "No response found.";
     for (let i = selectedIndex + 1; i < data.length; i++) {
       if (data[i].role === "assistant") {
         response = data[i].content;
         break;
       } else if (data[i].role === "user") {
-        break; // Stop searching if another user entry is found
+        break;
       }
     }
 
-    this.log(`\nResponse:\n${formatCodeBlocks(response)}\n`);
+    const selectedQuestion = questions.find((q: { name: string; value: number }) => q.value === selectedIndex);
+
+    if (selectedQuestion) {
+      this.log(chalk.blue(`\nQuestion:\n${selectedQuestion.name}`));
+    } else {
+      this.log(chalk.red("Error: Selected question not found."));
+    }
+
+    this.log(chalk.green("\nResponse:\n") + formatCodeBlocks(response) + "\n");
   }
 }
