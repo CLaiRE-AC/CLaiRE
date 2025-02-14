@@ -154,7 +154,10 @@ export default class Ask extends Command {
 
     try {
       const data = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(data);
+      const history = JSON.parse(data);
+
+      // Flatten all nested messages into a single array
+      return history.flatMap((entry: { messages: { role: string; content: string }[] }) => entry.messages);
     } catch (error) {
       this.warn(`Failed to load conversation history from ${filePath}. Starting fresh.`);
       return [];
