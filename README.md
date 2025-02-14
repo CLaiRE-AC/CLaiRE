@@ -31,6 +31,10 @@ USAGE
 <!-- commands -->
 * [`claire ask`](#claire-ask)
 * [`claire config`](#claire-config)
+* [`claire db import-history`](#claire-db-import-history)
+* [`claire db save-file FILE`](#claire-db-save-file-file)
+* [`claire db view-history`](#claire-db-view-history)
+* [`claire db view-logs`](#claire-db-view-logs)
 * [`claire help [COMMAND]`](#claire-help-command)
 * [`claire plugins`](#claire-plugins)
 * [`claire plugins add PLUGIN`](#claire-plugins-add-plugin)
@@ -42,24 +46,27 @@ USAGE
 * [`claire plugins uninstall [PLUGIN]`](#claire-plugins-uninstall-plugin)
 * [`claire plugins unlink [PLUGIN]`](#claire-plugins-unlink-plugin)
 * [`claire plugins update`](#claire-plugins-update)
+* [`claire view`](#claire-view)
 
 ## `claire ask`
 
-Send a prompt to OpenAI and maintain conversation history
+Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.
 
 ```
 USAGE
-  $ claire ask -p <value> [-m <value>] [-s] [-f <value>]
+  $ claire ask [-p <value>] [-F <value>] [-m <value>] [-s] [-r] [-i] [-f <value>]
 
 FLAGS
-  -f, --file=<value>    [default: /Users/himnme/Workspace/claire/history.json] Optional file path to save conversation
-                        history
-  -m, --model=<value>   [default: chatgpt-4o-latest] OpenAI model
-  -p, --prompt=<value>  (required) Prompt to send
-  -s, --save            Save conversation history
+  -F, --inputFile=<value>  Path to a file containing the question input
+  -f, --file=<value>       [default: /Users/himnme/.claire/history.json] Optional file path to save conversation history
+  -i, --interactive        Interactively select previous questions for context
+  -m, --model=<value>      [default: chatgpt-4o-latest] OpenAI model
+  -p, --prompt=<value>     Prompt to send
+  -r, --readHistory        Include entire conversation history in context
+  -s, --save               Save conversation history automatically
 
 DESCRIPTION
-  Send a prompt to OpenAI and maintain conversation history
+  Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.
 ```
 
 _See code: [src/commands/ask.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/ask.ts)_
@@ -70,18 +77,78 @@ Configure API key and email for automatic use.
 
 ```
 USAGE
-  $ claire config [-k <value>] [-e <value>] [-s]
+  $ claire config [-k <value>] [-e <value>] [-h <value>] [-s]
 
 FLAGS
-  -e, --email=<value>   Set user email
-  -k, --apiKey=<value>  Set OpenAI API key
-  -s, --show            Show current config
+  -e, --email=<value>        Set user email
+  -h, --historyFile=<value>  Set conversation history file
+  -k, --apiKey=<value>       Set OpenAI API key
+  -s, --show                 Show current config
 
 DESCRIPTION
   Configure API key and email for automatic use.
 ```
 
 _See code: [src/commands/config.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/config.ts)_
+
+## `claire db import-history`
+
+Import conversation history from history.json into the database.
+
+```
+USAGE
+  $ claire db import-history
+
+DESCRIPTION
+  Import conversation history from history.json into the database.
+```
+
+_See code: [src/commands/db/import-history.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/import-history.ts)_
+
+## `claire db save-file FILE`
+
+Save a file into the SQLite database.
+
+```
+USAGE
+  $ claire db save-file FILE
+
+ARGUMENTS
+  FILE  Path to the file
+
+DESCRIPTION
+  Save a file into the SQLite database.
+```
+
+_See code: [src/commands/db/save-file.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/save-file.ts)_
+
+## `claire db view-history`
+
+View stored conversation history.
+
+```
+USAGE
+  $ claire db view-history
+
+DESCRIPTION
+  View stored conversation history.
+```
+
+_See code: [src/commands/db/view-history.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/view-history.ts)_
+
+## `claire db view-logs`
+
+View stored logs.
+
+```
+USAGE
+  $ claire db view-logs
+
+DESCRIPTION
+  View stored logs.
+```
+
+_See code: [src/commands/db/view-logs.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/view-logs.ts)_
 
 ## `claire help [COMMAND]`
 
@@ -392,4 +459,22 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/update.ts)_
+
+## `claire view`
+
+View saved questions interactively and display responses.
+
+```
+USAGE
+  $ claire view [-f <value>] [-s <value>]
+
+FLAGS
+  -f, --file=<value>    [default: /Users/himnme/.claire/history.json] Path to conversation history file
+  -s, --search=<value>  Search for a question containing this keyword
+
+DESCRIPTION
+  View saved questions interactively and display responses.
+```
+
+_See code: [src/commands/view.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/view.ts)_
 <!-- commandsstop -->

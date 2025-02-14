@@ -21,7 +21,7 @@ if (!fs.existsSync(DB_DIR)) {
 const db: SqliteDatabase = new Database(DB_PATH, { verbose: console.log });
 
 // Enable foreign key constraints
-db.exec("PRAGMA foreign_keys = ON;");
+// db.exec("PRAGMA foreign_keys = ON;");
 
 // Default ESM export
 export default db;

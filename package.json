@@ -59,10 +59,10 @@
       "@oclif/plugin-help",
       "@oclif/plugin-plugins"
     ],
-    "topicSeparator": " ",
+    "topicSeparator": ":",
     "topics": {
-      "hello": {
-        "description": "Say hello to the world and others"
+      "db": {
+        "description": "Command for interacting and administering the Sqlite3 database"
       }
     }
   },
