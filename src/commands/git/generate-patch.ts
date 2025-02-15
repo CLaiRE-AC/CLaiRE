@@ -3,6 +3,7 @@ import axios, { AxiosError } from "axios";
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
+
 import inquirer from "inquirer";
 import { loadConfig } from "../../utils/config.js";
 import { loadConversation, saveConversation, confirmSaveConversation } from "../../utils/conversation.js"; // ✅ Updated import
@@ -51,14 +52,7 @@ export default class GeneratePatch extends Command {
     const prompt = this.buildPrompt(filePath, fileContent, gitDiff, history);
 
     // Fetch AI-generated patch
-    const aiResponse = await this.getAIResponse(prompt, apiKey, flags.model);
-
-    // Ask the user whether to save this interaction
-    const shouldSave = await confirmSaveConversation();
-    if (shouldSave) {
-      history.push({ role: "assistant", content: aiResponse });
-      saveConversation(history, historyFilePath);
-    }
+    const aiResponse = await this.getAIResponse(prompt, apiKey, flags.model, filePath);
 
     // Save patch file
     const outputDir = path.resolve(flags.output);
@@ -87,6 +81,13 @@ export default class GeneratePatch extends Command {
       } catch (error) {
         this.error(`Failed to apply patch. You can apply it manually using:\n  git apply ${patchFilePath}`);
       }
+    }
+
+    // Ask the user whether to save this interaction
+    const shouldSave = await confirmSaveConversation();
+    if (shouldSave) {
+      history.push({ role: "assistant", content: aiResponse });
+      saveConversation(history, historyFilePath);
     }
   }
 
@@ -118,42 +119,84 @@ export default class GeneratePatch extends Command {
 
     return `You are an expert software engineer specialized in Git patches.
 
-Previous conversations for context:
-${conversationHistory}
+  Important rules:
+  - Reply ONLY with raw Git patch output using "diff --git"
+  - DO NOT include explanations.
+  - DO NOT format the response in Markdown (no \`\`\` syntax).
+  - Reply ONLY with the patch content.
+  - Ensure you follow correct Git patch syntax.
 
----
-# File: ${filePath}
+  Previous conversations for context:
+  ${conversationHistory}
 
-## Current Code:
-\`\`\`
-${fileContent}
-\`\`\`
+  ---
+  # File: ${filePath}
 
-## Git Diff:
-\`\`\`
-${gitDiff}
-\`\`\`
+  ## Current Code:
+  \`\`\`
+  ${fileContent}
+  \`\`\`
 
-Instructions:
-- Follow provided modifications if specified.
-- If no specific request is given, suggest best practices.
-- Return only a valid Git patch (no explanations).
+  ## Git Diff:
+  \`\`\`
+  ${gitDiff}
+  \`\`\`
 
-Now generate the patch:`;
+  Instructions:
+  - Modify the code per the user request.
+  - If no specific request is given, apply meaningful best-practice improvements.
+  - Output MUST strictly follow "diff --git" format.
+
+  Now generate the patch with NO explanations:
+  `;
   }
 
   /** Queries OpenAI for a patch suggestion */
-  private async getAIResponse(prompt: string, apiKey: string, model: string): Promise<string> {
+  private async getAIResponse(prompt: string, apiKey: string, model: string, filePath: string): Promise<string> {
     try {
       const response = await axios.post(
         "https://api.openai.com/v1/chat/completions",
-        { model, messages: [{ role: "system", content: "Generate Git patches." }, { role: "user", content: prompt }] },
+        {
+          model,
+          messages: [{ role: "system", content: "Generate a valid Git patch with correct format." }, { role: "user", content: prompt }]
+        },
         { headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" } }
       );
 
-      return response.data.choices[0].message.content;
+      let patch = response.data.choices[0].message.content.trim();
+
+      // 🔍 Step 1: 🛑 Remove unwanted Markdown-style
+      const markdownMatch = patch.match(/```(?:patch)?\s*([\s\S]*?)\s*```/);
+      if (markdownMatch && markdownMatch[1]) {
+        patch = markdownMatch[1].trim();  // Extract only the code inside triple backticks
+      }
+
+      // 🔍 Step 2: 🔬 Extract only valid "diff --git" content
+      const diffMatch = patch.match(/(diff --git [\s\S]+)/);
+      if (diffMatch && diffMatch[1]) {
+        patch = diffMatch[1].trim();
+      } else {
+        this.error("⚠️ The AI response did not contain a valid Git patch.");
+      }
+
+      // 🔍 Step 3: ✅ Ensure patch headers (`--- a/` and `+++ b/`) are present
+      if (!patch.includes("--- a/") || !patch.includes("+++ b/")) {
+        this.warn("⚠️ AI-generated patch is missing required headers. Generating correct headers...");
+
+        // Extract the path from diff --git line
+        const fileMatch = patch.match(/^diff --git a\/(\S+) b\/\S+/);
+        const extractedFilePath = fileMatch && fileMatch[1] ? fileMatch[1] : filePath;
+
+        let reconstructedHeader = `--- a/${extractedFilePath}\n+++ b/${extractedFilePath}`;
+        patch = patch.replace(/^(@@.*)$/m, `${reconstructedHeader}\n$1`); // Insert before first @@ line
+      }
+
+      // 🔍 Step 4: ✂️ Strip trailing whitespaces
+      patch = patch.split("\n").map((line: string) => line.trimEnd()).join("\n");
+
+      return patch;
     } catch (error: unknown) {
-      this.error("OpenAI API Error: " + (error as AxiosError)?.message);
+      this.error(`🚨 OpenAI API Error: ${(error as AxiosError)?.message}`);
     }
   }
 }
