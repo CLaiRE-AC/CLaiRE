@@ -5,6 +5,7 @@ import path from "path";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
 import { loadConfig } from "../../utils/config.js";
+import { loadConversation, saveConversation, confirmSaveConversation } from "../../utils/conversation.js"; // ✅ Updated import
 
 export default class GeneratePatch extends Command {
   static description = "Generate AI-suggested code modifications as a Git patch.";
@@ -25,7 +26,6 @@ export default class GeneratePatch extends Command {
       this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");
     }
 
-    // Ensure file exists and is inside a Git repository
     const filePath = path.resolve(flags.file);
     if (!fs.existsSync(filePath)) {
       this.error(`File not found: ${filePath}`);
@@ -34,14 +34,31 @@ export default class GeneratePatch extends Command {
       this.error(`The file is not inside a valid Git repository: ${filePath}`);
     }
 
-    // Get file content & latest diff for context
     const fileContent = fs.readFileSync(filePath, "utf-8");
     const gitDiff = this.getGitDiffForFile(filePath);
 
-    // Ask AI for modifications
-    const userRequest = flags.prompt || ""; // Capture user's prompt (default to empty)
-    const prompt = this.buildPrompt(filePath, fileContent, gitDiff, userRequest);
+    // Load previous conversation history
+    const historyFilePath = path.join(process.cwd(), "history.json");
+    const history = loadConversation(historyFilePath);
+
+    // Capture user prompt or fallback to generic improvements
+    const userRequest = flags.prompt || "Apply best coding practices.";
+
+    // Append user request to history
+    history.push({ role: "user", content: userRequest });
+
+    // Prepare AI prompt using history-aware context
+    const prompt = this.buildPrompt(filePath, fileContent, gitDiff, history);
+
+    // Fetch AI-generated patch
     const aiResponse = await this.getAIResponse(prompt, apiKey, flags.model);
+
+    // Ask the user whether to save this interaction
+    const shouldSave = await confirmSaveConversation();
+    if (shouldSave) {
+      history.push({ role: "assistant", content: aiResponse });
+      saveConversation(history, historyFilePath);
+    }
 
     // Save patch file
     const outputDir = path.resolve(flags.output);
@@ -93,30 +110,36 @@ export default class GeneratePatch extends Command {
     }
   }
 
-  /** Constructs the OpenAI prompt */
-  private buildPrompt(filePath: string, fileContent: string, gitDiff: string, userPrompt: string | undefined): string {
-    return `You are a professional software engineer experienced in Git patch formatting.
+  /** Constructs the AI prompt using session history */
+  private buildPrompt(filePath: string, fileContent: string, gitDiff: string, history: { role: string; content: string }[]): string {
+    const conversationHistory = history
+      .map((entry) => `${entry.role.toUpperCase()}: ${entry.content}`)
+      .join("\n\n");
 
-  I have the following file: ${filePath}
-  ---
-  # Original Code:
-  \`\`\`
-  ${fileContent}
-  \`\`\`
+    return `You are an expert software engineer specialized in Git patches.
 
-  # Recent Changes from Git Diff:
-  \`\`\`
-  ${gitDiff}
-  \`\`\`
+Previous conversations for context:
+${conversationHistory}
 
-  # User Request:
-  ${userPrompt ? userPrompt : "Improve the code with best practices and optimizations."}
+---
+# File: ${filePath}
 
-  # Expected Output:
-  - Return a valid, unified diff Git patch formatted for "git apply".
-  - Do not include explanations—provide **only** the raw patch.
+## Current Code:
+\`\`\`
+${fileContent}
+\`\`\`
 
-  Now generate the patch:`;
+## Git Diff:
+\`\`\`
+${gitDiff}
+\`\`\`
+
+Instructions:
+- Follow provided modifications if specified.
+- If no specific request is given, suggest best practices.
+- Return only a valid Git patch (no explanations).
+
+Now generate the patch:`;
   }
 
   /** Queries OpenAI for a patch suggestion */
@@ -124,37 +147,13 @@ export default class GeneratePatch extends Command {
     try {
       const response = await axios.post(
         "https://api.openai.com/v1/chat/completions",
-        {
-          model: model,
-          messages: [
-            { role: "system", content: "You are a code assistant that generates Git patches." },
-            { role: "user", content: prompt },
-          ],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-        }
+        { model, messages: [{ role: "system", content: "Generate Git patches." }, { role: "user", content: prompt }] },
+        { headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" } }
       );
 
       return response.data.choices[0].message.content;
     } catch (error: unknown) {
-      this.handleError(error);
-      return "An error occurred while generating the patch.";
-    }
-  }
-
-  /** Handles errors */
-  private handleError(error: unknown): void {
-    if (error instanceof AxiosError) {
-      const errorMessage = error.response?.data?.error?.message || error.message;
-      this.error(`OpenAI API Error: ${errorMessage}`);
-    } else if (error instanceof Error) {
-      this.error(`Unexpected Error: ${error.message}`);
-    } else {
-      this.error("An unknown error occurred.");
+      this.error("OpenAI API Error: " + (error as AxiosError)?.message);
     }
   }
 }

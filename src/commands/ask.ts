@@ -5,6 +5,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { loadConfig, getHistoryFilePath } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
+import { loadConversation, saveConversation, confirmSaveConversation } from "../utils/conversation.js"; // ✅ Updated import
 
 export default class Ask extends Command {
   static description = "Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.";
@@ -33,7 +34,7 @@ export default class Ask extends Command {
     }
 
     let historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
-    let messages = flags.readHistory ? this.loadConversation(historyFile) : [];
+    let messages = flags.readHistory ? loadConversation(historyFile) : [];
 
     if (flags.interactive && fs.existsSync(historyFile)) {
       messages = await this.interactiveHistorySelection(historyFile, messages);
@@ -70,8 +71,8 @@ export default class Ask extends Command {
       messages.push({ role: "user", content: followUpQuestion.trim() });
     }
 
-    if (flags.save || await this.confirmSaveConversation()) {
-      this.saveConversation(messages, historyFile);
+    if (flags.save || await confirmSaveConversation()) {
+      saveConversation(messages, historyFile);
     }
   }
 
@@ -100,7 +101,7 @@ export default class Ask extends Command {
   }
 
   private async interactiveHistorySelection(historyFile: string, messages: any[]) {
-    const history = this.loadConversation(historyFile);
+    const history = loadConversation(historyFile);
     const questions = history
       .map((entry, index) => (entry.role === "user" ? { name: entry.content, value: index } : undefined))
       .filter((entry): entry is { name: string; value: number } => entry !== undefined);
@@ -147,62 +148,6 @@ export default class Ask extends Command {
     } catch (error: unknown) {
       this.handleError(error);
       return "An error occurred while fetching a response.";
-    }
-  }
-
-  private loadConversation(filePath: string | null): { role: string; content: string }[] {
-    if (!filePath || !fs.existsSync(filePath)) return [];
-
-    try {
-      const data = fs.readFileSync(filePath, "utf-8");
-      const history: { messages: { role: string; content: string }[] }[] = JSON.parse(data);
-
-      return history.flatMap(entry => entry.messages); // Ensured correct type
-    } catch (error) {
-      this.warn(`Failed to load conversation history from ${filePath}. Starting fresh.`);
-      return [];
-    }
-  }
-
-  private async confirmSaveConversation(): Promise<boolean> {
-    const { confirmSave } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "confirmSave",
-        message: "Would you like to save this conversation to history?",
-        default: true,
-      },
-    ]);
-    return confirmSave;
-  }
-
-  private saveConversation(messages: { role: string; content: string }[], filePath: string | null): void {
-    if (!filePath) return;
-
-    let history: { timestamp: string; messages: { role: string; content: string }[] }[] = [];
-
-    // Load existing history if the file exists
-    if (fs.existsSync(filePath)) {
-      try {
-        const data = fs.readFileSync(filePath, "utf-8");
-        history = JSON.parse(data);
-      } catch (error) {
-        this.warn(`Failed to load existing conversation history from ${filePath}. Initializing new history.`);
-      }
-    }
-
-    // Append the new conversation session with a timestamp
-    const newSession = {
-      timestamp: new Date().toISOString(),
-      messages: messages,
-    };
-    history.push(newSession);
-
-    try {
-      fs.writeFileSync(filePath, JSON.stringify(history, null, 2), "utf-8");
-      this.log(`Conversation history updated in ${filePath}.`);
-    } catch (error) {
-      this.warn(`Failed to save conversation history to ${filePath}.`);
     }
   }
 
