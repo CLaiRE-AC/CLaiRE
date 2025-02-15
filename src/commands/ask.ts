@@ -43,7 +43,8 @@ export default class Ask extends Command {
     messages.push({ role: "user", content: question });
 
     while (true) {
-      const response = await this.getAIResponse(messages, apiKey, flags.model);
+      const trimmedMessages = this.truncateHistory(messages);
+      const response = await this.getAIResponse(trimmedMessages, apiKey, flags.model);
       this.log(formatCodeBlocks(response));
       messages.push({ role: "assistant", content: response });
 
@@ -154,10 +155,9 @@ export default class Ask extends Command {
 
     try {
       const data = fs.readFileSync(filePath, "utf-8");
-      const history = JSON.parse(data);
+      const history: { messages: { role: string; content: string }[] }[] = JSON.parse(data);
 
-      // Flatten all nested messages into a single array
-      return history.flatMap((entry: { messages: { role: string; content: string }[] }) => entry.messages);
+      return history.flatMap(entry => entry.messages); // Ensured correct type
     } catch (error) {
       this.warn(`Failed to load conversation history from ${filePath}. Starting fresh.`);
       return [];
@@ -208,12 +208,47 @@ export default class Ask extends Command {
 
   private handleError(error: unknown): void {
     if (error instanceof AxiosError) {
+      const status = error.response?.status;
       const errorMessage = error.response?.data?.error?.message || error.message;
-      this.error(`OpenAI API Error: ${errorMessage}`);
+
+      if (status === 429) {
+        this.error(`Rate limit exceeded: ${errorMessage}. Try again later.`);
+      } else if (status === 401) {
+        this.error(`Unauthorized: Check if your API key is valid.`);
+      } else {
+        this.error(`OpenAI API Error (Status ${status}): ${errorMessage}`);
+      }
     } else if (error instanceof Error) {
       this.error(`Unexpected Error: ${error.message}`);
     } else {
       this.error("An unknown error occurred.");
+    }
+  }
+
+  private truncateHistory(messages: { role: string; content: string }[], maxTokens = 4096): { role: string; content: string }[] {
+    let totalTokens = 0;
+
+    // Traverse messages backwards and include only allowed context
+    const truncated: { role: string; content: string }[] = [];
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+      const tokenCount = message.content.split(" ").length; // Approximate token estimation
+
+      if (totalTokens + tokenCount > maxTokens) break;
+      totalTokens += tokenCount;
+      truncated.unshift(message);
+    }
+
+    return truncated;
+  }
+
+  private safeReadHistory(filePath: string): { role: string; content: string }[] {
+    try {
+      const data = fs.readFileSync(filePath, "utf-8");
+      return JSON.parse(data) as { role: string; content: string }[];
+    } catch (error) {
+      this.warn(`Could not read history file. Resetting history.`);
+      return [];
     }
   }
 }
