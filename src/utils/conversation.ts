@@ -6,18 +6,19 @@ import inquirer from "inquirer";
  * @param filePath Path to the conversation history file.
  */
 export function loadConversation(filePath: string | null): { role: string; content: string }[] {
-  if (!filePath || !fs.existsSync(filePath)) {
-    return [];
-  }
+    if (!filePath || !fs.existsSync(filePath)) return [];
 
-  try {
-    const data = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(data) as { role: string; content: string }[];
-  } catch (error) {
-    console.warn(`⚠️ Failed to load conversation history from ${filePath}. Starting fresh.`);
-    return [];
+    try {
+      const data = fs.readFileSync(filePath, "utf-8");
+      const conversations = JSON.parse(data);
+
+      // Flatten all messages across the conversations
+      return conversations.flatMap((entry: { messages: { role: string; content: string }[] }) => entry.messages);
+    } catch (error) {
+      console.warn(`Failed to load conversation history from ${filePath}. Starting fresh.`);
+      return [];
+    }
   }
-}
 
 /**
  * Prompts the user to confirm whether to save the conversation history.
