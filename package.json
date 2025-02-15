@@ -62,7 +62,10 @@
     "topicSeparator": ":",
     "topics": {
       "db": {
-        "description": "Command for interacting and administering the Sqlite3 database"
+        "description": "Commands for interacting and administering the Sqlite3 database"
+      },
+      "git": {
+        "description": "Commands for interacting and administering the Git repository"
       }
     }
   },

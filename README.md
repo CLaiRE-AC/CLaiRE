@@ -31,21 +31,22 @@ USAGE
 <!-- commands -->
 * [`claire ask`](#claire-ask)
 * [`claire config`](#claire-config)
-* [`claire db import-history`](#claire-db-import-history)
-* [`claire db save-file FILE`](#claire-db-save-file-file)
-* [`claire db view-history`](#claire-db-view-history)
-* [`claire db view-logs`](#claire-db-view-logs)
+* [`claire db:import-history`](#claire-dbimport-history)
+* [`claire db:save-file FILE`](#claire-dbsave-file-file)
+* [`claire db:view-history`](#claire-dbview-history)
+* [`claire db:view-logs`](#claire-dbview-logs)
+* [`claire git:generate-patch`](#claire-gitgenerate-patch)
 * [`claire help [COMMAND]`](#claire-help-command)
 * [`claire plugins`](#claire-plugins)
-* [`claire plugins add PLUGIN`](#claire-plugins-add-plugin)
+* [`claire plugins:add PLUGIN`](#claire-pluginsadd-plugin)
 * [`claire plugins:inspect PLUGIN...`](#claire-pluginsinspect-plugin)
-* [`claire plugins install PLUGIN`](#claire-plugins-install-plugin)
-* [`claire plugins link PATH`](#claire-plugins-link-path)
-* [`claire plugins remove [PLUGIN]`](#claire-plugins-remove-plugin)
-* [`claire plugins reset`](#claire-plugins-reset)
-* [`claire plugins uninstall [PLUGIN]`](#claire-plugins-uninstall-plugin)
-* [`claire plugins unlink [PLUGIN]`](#claire-plugins-unlink-plugin)
-* [`claire plugins update`](#claire-plugins-update)
+* [`claire plugins:install PLUGIN`](#claire-pluginsinstall-plugin)
+* [`claire plugins:link PATH`](#claire-pluginslink-path)
+* [`claire plugins:remove [PLUGIN]`](#claire-pluginsremove-plugin)
+* [`claire plugins:reset`](#claire-pluginsreset)
+* [`claire plugins:uninstall [PLUGIN]`](#claire-pluginsuninstall-plugin)
+* [`claire plugins:unlink [PLUGIN]`](#claire-pluginsunlink-plugin)
+* [`claire plugins:update`](#claire-pluginsupdate)
 * [`claire view`](#claire-view)
 
 ## `claire ask`
@@ -91,13 +92,13 @@ DESCRIPTION
 
 _See code: [src/commands/config.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/config.ts)_
 
-## `claire db import-history`
+## `claire db:import-history`
 
 Import conversation history from history.json into the database.
 
 ```
 USAGE
-  $ claire db import-history
+  $ claire db:import-history
 
 DESCRIPTION
   Import conversation history from history.json into the database.
@@ -105,13 +106,13 @@ DESCRIPTION
 
 _See code: [src/commands/db/import-history.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/import-history.ts)_
 
-## `claire db save-file FILE`
+## `claire db:save-file FILE`
 
 Save a file into the SQLite database.
 
 ```
 USAGE
-  $ claire db save-file FILE
+  $ claire db:save-file FILE
 
 ARGUMENTS
   FILE  Path to the file
@@ -122,13 +123,13 @@ DESCRIPTION
 
 _See code: [src/commands/db/save-file.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/save-file.ts)_
 
-## `claire db view-history`
+## `claire db:view-history`
 
 View stored conversation history.
 
 ```
 USAGE
-  $ claire db view-history
+  $ claire db:view-history
 
 DESCRIPTION
   View stored conversation history.
@@ -136,19 +137,39 @@ DESCRIPTION
 
 _See code: [src/commands/db/view-history.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/view-history.ts)_
 
-## `claire db view-logs`
+## `claire db:view-logs`
 
 View stored logs.
 
 ```
 USAGE
-  $ claire db view-logs
+  $ claire db:view-logs
 
 DESCRIPTION
   View stored logs.
 ```
 
 _See code: [src/commands/db/view-logs.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/db/view-logs.ts)_
+
+## `claire git:generate-patch`
+
+Generate AI-suggested code modifications as a Git patch.
+
+```
+USAGE
+  $ claire git:generate-patch -f <value> [-o <value>] [-m <value>] [-p <value>]
+
+FLAGS
+  -f, --file=<value>    (required) Path to the source file in git repository
+  -m, --model=<value>   [default: chatgpt-4o-latest] OpenAI model
+  -o, --output=<value>  [default: ./patches] Optional output directory for the patch file
+  -p, --prompt=<value>  Custom modification request (e.g., 'Optimize this function')
+
+DESCRIPTION
+  Generate AI-suggested code modifications as a Git patch.
+```
+
+_See code: [src/commands/git/generate-patch.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/git/generate-patch.ts)_
 
 ## `claire help [COMMAND]`
 
@@ -193,13 +214,13 @@ EXAMPLES
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/index.ts)_
 
-## `claire plugins add PLUGIN`
+## `claire plugins:add PLUGIN`
 
 Installs a plugin into claire.
 
 ```
 USAGE
-  $ claire plugins add PLUGIN... [--json] [-f] [-h] [-s | -v]
+  $ claire plugins:add PLUGIN... [--json] [-f] [-h] [-s | -v]
 
 ARGUMENTS
   PLUGIN...  Plugin to install.
@@ -224,20 +245,20 @@ DESCRIPTION
   Use the CLAIRE_NPM_REGISTRY environment variable to set the npm registry.
 
 ALIASES
-  $ claire plugins add
+  $ claire plugins:add
 
 EXAMPLES
   Install a plugin from npm registry.
 
-    $ claire plugins add myplugin
+    $ claire plugins:add myplugin
 
   Install a plugin from a github url.
 
-    $ claire plugins add https://github.com/someuser/someplugin
+    $ claire plugins:add https://github.com/someuser/someplugin
 
   Install a plugin from a github slug.
 
-    $ claire plugins add someuser/someplugin
+    $ claire plugins:add someuser/someplugin
 ```
 
 ## `claire plugins:inspect PLUGIN...`
@@ -246,7 +267,7 @@ Displays installation properties of a plugin.
 
 ```
 USAGE
-  $ claire plugins inspect PLUGIN...
+  $ claire plugins:inspect PLUGIN...
 
 ARGUMENTS
   PLUGIN...  [default: .] Plugin to inspect.
@@ -262,18 +283,18 @@ DESCRIPTION
   Displays installation properties of a plugin.
 
 EXAMPLES
-  $ claire plugins inspect myplugin
+  $ claire plugins:inspect myplugin
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/inspect.ts)_
 
-## `claire plugins install PLUGIN`
+## `claire plugins:install PLUGIN`
 
 Installs a plugin into claire.
 
 ```
 USAGE
-  $ claire plugins install PLUGIN... [--json] [-f] [-h] [-s | -v]
+  $ claire plugins:install PLUGIN... [--json] [-f] [-h] [-s | -v]
 
 ARGUMENTS
   PLUGIN...  Plugin to install.
@@ -298,31 +319,31 @@ DESCRIPTION
   Use the CLAIRE_NPM_REGISTRY environment variable to set the npm registry.
 
 ALIASES
-  $ claire plugins add
+  $ claire plugins:add
 
 EXAMPLES
   Install a plugin from npm registry.
 
-    $ claire plugins install myplugin
+    $ claire plugins:install myplugin
 
   Install a plugin from a github url.
 
-    $ claire plugins install https://github.com/someuser/someplugin
+    $ claire plugins:install https://github.com/someuser/someplugin
 
   Install a plugin from a github slug.
 
-    $ claire plugins install someuser/someplugin
+    $ claire plugins:install someuser/someplugin
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/install.ts)_
 
-## `claire plugins link PATH`
+## `claire plugins:link PATH`
 
 Links a plugin into the CLI for development.
 
 ```
 USAGE
-  $ claire plugins link PATH [-h] [--install] [-v]
+  $ claire plugins:link PATH [-h] [--install] [-v]
 
 ARGUMENTS
   PATH  [default: .] path to plugin
@@ -342,18 +363,18 @@ DESCRIPTION
 
 
 EXAMPLES
-  $ claire plugins link myplugin
+  $ claire plugins:link myplugin
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/link.ts)_
 
-## `claire plugins remove [PLUGIN]`
+## `claire plugins:remove [PLUGIN]`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ claire plugins remove [PLUGIN...] [-h] [-v]
+  $ claire plugins:remove [PLUGIN...] [-h] [-v]
 
 ARGUMENTS
   PLUGIN...  plugin to uninstall
@@ -366,20 +387,20 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ claire plugins unlink
-  $ claire plugins remove
+  $ claire plugins:unlink
+  $ claire plugins:remove
 
 EXAMPLES
-  $ claire plugins remove myplugin
+  $ claire plugins:remove myplugin
 ```
 
-## `claire plugins reset`
+## `claire plugins:reset`
 
 Remove all user-installed and linked plugins.
 
 ```
 USAGE
-  $ claire plugins reset [--hard] [--reinstall]
+  $ claire plugins:reset [--hard] [--reinstall]
 
 FLAGS
   --hard       Delete node_modules and package manager related files in addition to uninstalling plugins.
@@ -388,13 +409,13 @@ FLAGS
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/reset.ts)_
 
-## `claire plugins uninstall [PLUGIN]`
+## `claire plugins:uninstall [PLUGIN]`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ claire plugins uninstall [PLUGIN...] [-h] [-v]
+  $ claire plugins:uninstall [PLUGIN...] [-h] [-v]
 
 ARGUMENTS
   PLUGIN...  plugin to uninstall
@@ -407,22 +428,22 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ claire plugins unlink
-  $ claire plugins remove
+  $ claire plugins:unlink
+  $ claire plugins:remove
 
 EXAMPLES
-  $ claire plugins uninstall myplugin
+  $ claire plugins:uninstall myplugin
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/uninstall.ts)_
 
-## `claire plugins unlink [PLUGIN]`
+## `claire plugins:unlink [PLUGIN]`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ claire plugins unlink [PLUGIN...] [-h] [-v]
+  $ claire plugins:unlink [PLUGIN...] [-h] [-v]
 
 ARGUMENTS
   PLUGIN...  plugin to uninstall
@@ -435,20 +456,20 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ claire plugins unlink
-  $ claire plugins remove
+  $ claire plugins:unlink
+  $ claire plugins:remove
 
 EXAMPLES
-  $ claire plugins unlink myplugin
+  $ claire plugins:unlink myplugin
 ```
 
-## `claire plugins update`
+## `claire plugins:update`
 
 Update installed plugins.
 
 ```
 USAGE
-  $ claire plugins update [-h] [-v]
+  $ claire plugins:update [-h] [-v]
 
 FLAGS
   -h, --help     Show CLI help.

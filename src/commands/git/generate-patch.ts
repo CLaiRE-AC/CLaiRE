@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
-import { loadConfig } from "../utils/config.js";
+import { loadConfig } from "../../utils/config.js";
 
 export default class GeneratePatch extends Command {
   static description = "Generate AI-suggested code modifications as a Git patch.";
