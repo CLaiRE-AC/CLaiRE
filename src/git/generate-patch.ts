@@ -13,6 +13,7 @@ export default class GeneratePatch extends Command {
     file: Flags.string({ char: "f", description: "Path to the source file in git repository", required: true }),
     output: Flags.string({ char: "o", description: "Optional output directory for the patch file", default: "./patches" }),
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
+    prompt: Flags.string({ char: "p", description: "Custom modification request (e.g., 'Optimize this function')" }),
   };
 
   async run() {
@@ -38,7 +39,8 @@ export default class GeneratePatch extends Command {
     const gitDiff = this.getGitDiffForFile(filePath);
 
     // Ask AI for modifications
-    const prompt = this.buildPrompt(filePath, fileContent, gitDiff);
+    const userRequest = flags.prompt || ""; // Capture user's prompt (default to empty)
+    const prompt = this.buildPrompt(filePath, fileContent, gitDiff, userRequest);
     const aiResponse = await this.getAIResponse(prompt, apiKey, flags.model);
 
     // Save patch file
@@ -92,25 +94,29 @@ export default class GeneratePatch extends Command {
   }
 
   /** Constructs the OpenAI prompt */
-  private buildPrompt(filePath: string, fileContent: string, gitDiff: string): string {
-    return `You are an expert code reviewer. I need a Git patch to improve this file: ${filePath}
----
-# Original File:
-\`\`\`
-${fileContent}
-\`\`\`
+  private buildPrompt(filePath: string, fileContent: string, gitDiff: string, userPrompt: string | undefined): string {
+    return `You are a professional software engineer experienced in Git patch formatting.
 
-# Recent Changes from Git Diff:
-\`\`\`
-${gitDiff}
-\`\`\`
+  I have the following file: ${filePath}
+  ---
+  # Original Code:
+  \`\`\`
+  ${fileContent}
+  \`\`\`
 
-# Expected Output:
-- Return only a valid "unified diff" Git patch.
-- The patch should be directly applicable using "git apply".
-- Do not include explanations, only the raw patch.
+  # Recent Changes from Git Diff:
+  \`\`\`
+  ${gitDiff}
+  \`\`\`
 
-Now generate the patch:`;
+  # User Request:
+  ${userPrompt ? userPrompt : "Improve the code with best practices and optimizations."}
+
+  # Expected Output:
+  - Return a valid, unified diff Git patch formatted for "git apply".
+  - Do not include explanations—provide **only** the raw patch.
+
+  Now generate the patch:`;
   }
 
   /** Queries OpenAI for a patch suggestion */
