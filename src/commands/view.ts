@@ -1,120 +1,75 @@
 import { Command, Flags } from "@oclif/core";
+import inquirer from "inquirer";
+import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import inquirer from "inquirer";
-import { getHistoryFilePath } from "../utils/config.js";
-import { formatCodeBlocks } from "../utils/codeFormatter.js";
-import chalk from "chalk";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
-
-interface ConversationEntry {
-  timestamp: string;
-  messages: Message[];
-}
+import os from "os";
+import { loadConversation } from "../utils/conversation.js";
 
 export default class View extends Command {
   static description = "View saved questions interactively and display responses.";
 
   static flags = {
-    file: Flags.string({
-      char: "f",
-      description: "Path to conversation history file",
-      default: getHistoryFilePath(),
-    }),
-    search: Flags.string({
-      char: "s",
-      description: "Search for a question containing this keyword",
-    }),
+    search: Flags.string({ char: "s", description: "Search for a question containing this keyword" }),
   };
 
   async run() {
     const { flags } = await this.parse(View);
-    const historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
+    const historyData = loadConversation();
 
-    if (!fs.existsSync(historyFile)) {
-      this.error(`No conversation history found at ${historyFile}.`);
-    }
-
-    let historyData: ConversationEntry[];
-
-    try {
-      historyData = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
-    } catch (error) {
-      this.error(`Failed to parse conversation history. Ensure ${historyFile} contains valid JSON.`);
+    if (historyData.length === 0) {
+      this.error("No conversation history found.");
       return;
     }
 
-    // Flattens all user messages while keeping track of their index in the history
-    let questions = historyData.flatMap((entry, entryIndex) =>
-      entry.messages
-        .map((message, messageIndex) =>
-          message.role === "user"
-            ? {
-                name: message.content,
-                value: { entryIndex, messageIndex },  // Use both indices to locate responses
-              }
-            : null
-        )
-        .filter(Boolean)
-    ) as { name: string; value: { entryIndex: number; messageIndex: number } }[];
+    // ✅ Extract only user messages
+    let questions = historyData
+      .map((message, index) => message.role === "user" ? { name: message.content, value: index } : null)
+      .filter(Boolean) as { name: string; value: number }[];
 
     if (flags.search) {
-      const keyword = flags.search.toLowerCase();
-      questions = questions.filter((q) => q.name.toLowerCase().includes(keyword));
-
+      let query = flags.search || "";
+      questions = questions.filter(q => q.name.toLowerCase().includes(query.toLowerCase()));
       if (questions.length === 0) {
-        this.log(chalk.yellow(`No questions found containing keyword: "${flags.search}".`));
+        this.log(chalk.yellow(`No questions found containing "${flags.search}".`));
         return;
       }
     }
 
     if (questions.length === 0) {
-      this.log(chalk.red("No questions found in the conversation history."));
+      this.log(chalk.red("No questions found."));
       return;
     }
 
+    // ✅ Prompt user to select a question
     const { selectedIndex } = await inquirer.prompt([
       {
         type: "list",
         name: "selectedIndex",
         message: chalk.cyan("Select a question to view its response:"),
         choices: questions,
-        pageSize: 10, // Optimized user experience
+        pageSize: 10,
       },
     ]);
 
-    const { entryIndex, messageIndex } = selectedIndex;
-    const selectedEntry = historyData[entryIndex];
-    const selectedMessages = selectedEntry.messages;
+    const selectedQuestion = historyData[selectedIndex];
 
+    // ✅ Extract assistant responses for the selected question
     let responses: string[] = [];
-
-    // Collect responses after the selected user message
-    for (let i = messageIndex + 1; i < selectedMessages.length; i++) {
-      if (selectedMessages[i].role === "assistant") {
-        let sanitizedContent = selectedMessages[i].content.replace(/\\(["'])/g, "$1"); // Unescape quotes
-        responses.push(sanitizedContent);
-      } else if (selectedMessages[i].role === "user") {
-        break; // Stop when the next user message is encountered
+    for (let i = selectedIndex + 1; i < historyData.length; i++) {
+      if (historyData[i].role === "assistant") {
+        responses.push(historyData[i].content);
+      } else if (historyData[i].role === "user") {
+        break; // Stop when a new question appears
       }
     }
 
-    const selectedQuestion = questions.find((q) => q.value.entryIndex === entryIndex && q.value.messageIndex === messageIndex);
-
-    if (selectedQuestion) {
-      this.log(chalk.blue(`\nQuestion:\n${selectedQuestion.name}\n`));
-    } else {
-      this.log(chalk.red("Error: Selected question not found."));
-    }
+    this.log(chalk.blue(`\nQuestion:\n${selectedQuestion.content}\n`));
 
     if (responses.length > 0) {
-      this.log(chalk.green("\nResponse:\n") + formatCodeBlocks(responses.join("\n\n")) + "\n");
+      this.log(chalk.green("\nResponse:\n") + responses.join("\n\n") + "\n");
     } else {
-      this.log(chalk.yellow("\nNo response found for this question. The conversation may have been incomplete.\n"));
+      this.log(chalk.yellow("\nNo response found for this question.\n"));
     }
   }
 }

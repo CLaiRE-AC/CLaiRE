@@ -66,6 +66,9 @@
       },
       "git": {
         "description": "Commands for interacting and administering the Git repository"
+      },
+      "project": {
+        "description": "Project based commands for Claire"
       }
     }
   },

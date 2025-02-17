@@ -39,8 +39,7 @@ export default class GeneratePatch extends Command {
     const gitDiff = this.getGitDiffForFile(filePath);
 
     // Load previous conversation history
-    const historyFilePath = path.join(process.cwd(), "history.json");
-    const history = loadConversation(historyFilePath);
+    const history = loadConversation();
 
     // Capture user prompt or fallback to generic improvements
     const userRequest = flags.prompt || "Apply best coding practices.";
@@ -87,7 +86,7 @@ export default class GeneratePatch extends Command {
     const shouldSave = await confirmSaveConversation();
     if (shouldSave) {
       history.push({ role: "assistant", content: aiResponse });
-      saveConversation(history, historyFilePath);
+      saveConversation(history);
     }
   }
 

@@ -3,9 +3,9 @@ import axios, { AxiosError } from "axios";
 import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
-import { loadConfig, getHistoryFilePath } from "../utils/config.js";
+import { loadConfig } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
-import { loadConversation, saveConversation, confirmSaveConversation } from "../utils/conversation.js"; // ✅ Updated import
+import { loadConversation, saveConversation, confirmSaveConversation, saveQuestion } from "../utils/conversation.js"; // ✅ Updated import
 
 export default class Ask extends Command {
   static description = "Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.";
@@ -16,8 +16,7 @@ export default class Ask extends Command {
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
     save: Flags.boolean({ char: "s", description: "Save conversation history automatically" }),
     readHistory: Flags.boolean({ char: "r", description: "Include entire conversation history in context" }),
-    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" }),
-    file: Flags.string({ char: "f", description: "Optional file path to save conversation history", default: getHistoryFilePath() }),
+    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" })
   };
 
   async run() {
@@ -33,11 +32,10 @@ export default class Ask extends Command {
       this.error("You must provide a prompt using --prompt (-p) or specify an input file using --input-file (-F).");
     }
 
-    let historyFile = flags.file ? path.resolve(flags.file) : getHistoryFilePath();
-    let messages = flags.readHistory ? loadConversation(historyFile) : [];
+    let messages = flags.readHistory ? loadConversation() : [];
 
-    if (flags.interactive && fs.existsSync(historyFile)) {
-      messages = await this.interactiveHistorySelection(historyFile, messages);
+    if (flags.interactive) {
+      messages = await this.interactiveHistorySelection(messages);
     }
 
     let question = await this.getInitialQuestion(flags);
@@ -48,6 +46,8 @@ export default class Ask extends Command {
       const response = await this.getAIResponse(trimmedMessages, apiKey, flags.model);
       this.log(formatCodeBlocks(response));
       messages.push({ role: "assistant", content: response });
+
+      saveQuestion(question, response);
 
       const { followUp } = await inquirer.prompt([
         {
@@ -72,7 +72,7 @@ export default class Ask extends Command {
     }
 
     if (flags.save || await confirmSaveConversation()) {
-      saveConversation(messages, historyFile);
+      saveConversation(messages);
     }
   }
 
@@ -100,8 +100,8 @@ export default class Ask extends Command {
     return question;
   }
 
-  private async interactiveHistorySelection(historyFile: string, messages: any[]) {
-    const history = loadConversation(historyFile);
+  private async interactiveHistorySelection(messages: any[]) {
+    const history = loadConversation();
     const questions = history
       .map((entry, index) => (entry.role === "user" ? { name: entry.content, value: index } : undefined))
       .filter((entry): entry is { name: string; value: number } => entry !== undefined);

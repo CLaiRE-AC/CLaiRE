@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import db from "../utils/database.js";
-import { getHistoryFilePath } from "../utils/config.js";
 
 interface Message {
   role: "user" | "assistant";
@@ -14,7 +13,7 @@ interface ConversationEntry {
 }
 
 export function importHistory() {
-  const historyFile = getHistoryFilePath();
+  const historyFile = path.resolve("history.json");
 
   if (!fs.existsSync(historyFile)) {
     console.error(`❌ No history file found at ${historyFile}`);

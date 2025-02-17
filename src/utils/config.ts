@@ -7,7 +7,6 @@ const CONFIG_FILE = path.join(os.homedir(), ".claire", "config.json");
 export type ConfigData = {
   openai_api_key?: string;
   email?: string;
-  history_file?: string;
 };
 
 /**
@@ -29,19 +28,3 @@ export function saveConfig(newConfig: Record<string, any>) {
   const config = { ...loadConfig(), ...newConfig };
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
 }
-
-/**
- * Get the conversation history file path
- */
-export function getHistoryFilePath(): string {
-  const config = loadConfig();
-  return path.join(os.homedir(), ".claire", config.history_file) || path.join(os.homedir(), ".claire", "history.json");
-}
-
-/**
- * Set the conversation history file path
- */
-export function setHistoryFilePath(fileName: string) {
-  saveConfig({ history_file: fileName });
-}
-

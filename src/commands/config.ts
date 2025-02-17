@@ -7,7 +7,6 @@ export default class Config extends Command {
   static flags = {
     apiKey: Flags.string({ char: "k", description: "Set OpenAI API key" }),
     email: Flags.string({ char: "e", description: "Set user email" }),
-    historyFile: Flags.string({ char: "h", description: "Set conversation history file" }),
     show: Flags.boolean({ char: "s", description: "Show current config" }),
   };
 
@@ -20,11 +19,11 @@ export default class Config extends Command {
       return;
     }
 
-    if (flags.apiKey || flags.email || flags.historyFile) {
+    if (flags.apiKey || flags.email) {
       saveConfig({
         openai_api_key: flags.apiKey || config.openai_api_key, 
-        email: flags.email || config.email,
-        history_file: flags.historyFile || config.history_file });
+        email: flags.email || config.email
+      })
       this.log("✅ Configuration updated.");
     } else {
       this.error("Use --show to view settings or provide --apiKey and/or --email to update.");
