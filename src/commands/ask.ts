@@ -14,8 +14,9 @@ export default class Ask extends Command {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
     inputFile: Flags.string({ char: "F", description: "Path to a file containing the question input" }),
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
+    nocontext: Flags.boolean({ description: "Bypass reading project conversation history" }),
     interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" }),
-    apiSave: Flags.boolean({ char: "a", description: "Save question and response to CLaiRE Rails API" }),
+    api: Flags.boolean({ description: "Save question and response to CLaiRE Rails API" }),
     apiHost: Flags.string({ char: "h", description: "Hostname for CLaiRE Rails API", default: "http://localhost:3000" })
   };
 
@@ -32,7 +33,7 @@ export default class Ask extends Command {
       this.error("You must provide a prompt using --prompt (-p) or specify an input file using --input-file (-F).");
     }
 
-    let messages = loadConversation();
+    let messages = flags.nocontext ? [] : loadConversation();
 
     if (flags.interactive) {
       messages = await this.interactiveHistorySelection(messages);
@@ -50,7 +51,7 @@ export default class Ask extends Command {
       saveQuestion(question, response);
 
       // Post to CLaiRE API
-      if (flags.apiSave) {
+      if (flags.api) {
         await postConversationToAPI(question, response, flags.apiHost);
       }
 
