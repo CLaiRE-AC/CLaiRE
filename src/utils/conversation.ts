@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import inquirer from "inquirer";
+import axios from "axios";
 import chalk from "chalk";
 
 /**
@@ -129,6 +130,52 @@ export function saveQuestion(question: string, response: string): void {
       console.warn(`⚠️ Failed to save detailed question file: ${error.message}`);
     } else {
       console.warn("⚠️ An unknown error occurred while saving the file.");
+    }
+  }
+}
+
+/**
+ * Sends a user question and AI response to an API endpoint.
+ * @param {string} question - The user’s message.
+ * @param {string} response - The AI’s response.
+ * @returns {Promise<void>}
+ */
+export async function postConversationToAPI(question: string, response: string, apiHost: string): Promise<void> {
+  const apiEndpoint = `${apiHost}/api/conversations`; // Update if different
+  const apiKey = process.env.CLAIRE_API_KEY;  // Read API key from environment variable
+
+  if (!apiKey) {
+    console.error(chalk.red("⚠️ API_KEY environment variable is missing!"));
+    return;
+  }
+
+  const payload = {
+    conversation: {
+      user_message: question,
+      ai_response: response,
+      timestamp: new Date().toISOString(),
+    },
+  };
+
+  try {
+    const res = await axios.post(apiEndpoint, payload, {
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (res.status === 200 || res.status === 201) {
+      console.log(chalk.green("✅ Successfully posted conversation to API!"));
+    } else {
+      console.warn(chalk.yellow(`⚠️ API responded with status: ${res.status}`));
+    }
+
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error(chalk.red(`❌ API request failed: ${error.response?.status} - ${error.response?.statusText}`));
+    } else {
+      console.error(chalk.red(`❌ Unexpected error occurred: ${error}`));
     }
   }
 }

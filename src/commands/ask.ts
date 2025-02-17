@@ -5,7 +5,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { loadConfig } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
-import { loadConversation, saveConversation, saveQuestion } from "../utils/conversation.js"; // ✅ Updated import
+import { loadConversation, saveConversation, saveQuestion, postConversationToAPI } from "../utils/conversation.js"; // ✅ Updated import
 
 export default class Ask extends Command {
   static description = "Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.";
@@ -14,8 +14,9 @@ export default class Ask extends Command {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
     inputFile: Flags.string({ char: "F", description: "Path to a file containing the question input" }),
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
-    readHistory: Flags.boolean({ char: "r", description: "Include entire conversation history in context" }),
-    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" })
+    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" }),
+    apiSave: Flags.boolean({ char: "a", description: "Save question and response to CLaiRE Rails API" }),
+    apiHost: Flags.string({ char: "h", description: "Hostname for CLaiRE Rails API", default: "http://localhost:3000" })
   };
 
   async run() {
@@ -31,7 +32,7 @@ export default class Ask extends Command {
       this.error("You must provide a prompt using --prompt (-p) or specify an input file using --input-file (-F).");
     }
 
-    let messages = flags.readHistory ? loadConversation() : [];
+    let messages = loadConversation();
 
     if (flags.interactive) {
       messages = await this.interactiveHistorySelection(messages);
@@ -47,6 +48,11 @@ export default class Ask extends Command {
       messages.push({ role: "assistant", content: response });
 
       saveQuestion(question, response);
+
+      // Post to CLaiRE API
+      if (flags.apiSave) {
+        await postConversationToAPI(question, response, flags.apiHost);
+      }
 
       const { followUp } = await inquirer.prompt([
         {
