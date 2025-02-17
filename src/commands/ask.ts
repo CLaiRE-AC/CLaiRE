@@ -5,7 +5,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { loadConfig } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
-import { loadConversation, saveConversation, confirmSaveConversation, saveQuestion } from "../utils/conversation.js"; // ✅ Updated import
+import { loadConversation, saveConversation, saveQuestion } from "../utils/conversation.js"; // ✅ Updated import
 
 export default class Ask extends Command {
   static description = "Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.";
@@ -14,7 +14,6 @@ export default class Ask extends Command {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
     inputFile: Flags.string({ char: "F", description: "Path to a file containing the question input" }),
     model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
-    save: Flags.boolean({ char: "s", description: "Save conversation history automatically" }),
     readHistory: Flags.boolean({ char: "r", description: "Include entire conversation history in context" }),
     interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" })
   };
@@ -71,16 +70,14 @@ export default class Ask extends Command {
       messages.push({ role: "user", content: followUpQuestion.trim() });
     }
 
-    if (flags.save || await confirmSaveConversation()) {
-      saveConversation(messages);
-    }
+    saveConversation(messages);
   }
 
   private async getInitialQuestion(flags: any): Promise<string> {
     let questionParts: string[] = [];
 
     if (flags.prompt) {
-      questionParts.push(`User prompt:\n${flags.prompt.trim()}`);
+      questionParts.push(`Prompt:\t${flags.prompt.trim()}`);
     }
 
     if (flags.inputFile) {
@@ -89,7 +86,7 @@ export default class Ask extends Command {
         this.error(`Input file not found: ${filePath}`);
       }
       const fileContent = fs.readFileSync(filePath, "utf-8").trim();
-      questionParts.push(`Input file (${filePath}):\n${fileContent}`);
+      questionParts.push(`Input file:\t(${filePath}):\n${fileContent}`);
     }
 
     const question = questionParts.join("\n---\n");

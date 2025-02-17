@@ -22,9 +22,17 @@ export default class View extends Command {
       return;
     }
 
-    // ✅ Extract only user messages
+    // ✅ Extract only user messages, truncated to 300 characters
     let questions = historyData
-      .map((message, index) => message.role === "user" ? { name: message.content, value: index } : null)
+      .map((message, index) => {
+        if (message.role === "user") {
+          const truncatedContent = message.content.length > 130
+            ? message.content.substring(0, 130) + "..."
+            : message.content;
+          return { name: truncatedContent, value: index };
+        }
+        return null;
+      })
       .filter(Boolean) as { name: string; value: number }[];
 
     if (flags.search) {
@@ -48,7 +56,7 @@ export default class View extends Command {
         name: "selectedIndex",
         message: chalk.cyan("Select a question to view its response:"),
         choices: questions,
-        pageSize: 10,
+        pageSize: 30,
       },
     ]);
 
@@ -64,10 +72,13 @@ export default class View extends Command {
       }
     }
 
-    this.log(chalk.blue(`\nQuestion:\n${selectedQuestion.content}\n`));
+    // ✅ Display the full question in the console
+    this.log(chalk.blue(`\nQuestion:\n`));
+    this.log(chalk.whiteBright(selectedQuestion.content));
 
     if (responses.length > 0) {
-      this.log(chalk.green("\nResponse:\n") + responses.join("\n\n") + "\n");
+      this.log(chalk.green("\nResponse:\n"));
+      this.log(chalk.whiteBright(responses.join("\n\n")));
     } else {
       this.log(chalk.yellow("\nNo response found for this question.\n"));
     }
