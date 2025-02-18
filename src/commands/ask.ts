@@ -55,6 +55,8 @@ export default class Ask extends Command {
         await postConversationToAPI(question, response, flags.apiHost);
       }
 
+      saveConversation(messages);
+
       const { followUp } = await inquirer.prompt([
         {
           type: "confirm",
@@ -76,8 +78,6 @@ export default class Ask extends Command {
 
       messages.push({ role: "user", content: followUpQuestion.trim() });
     }
-
-    saveConversation(messages);
   }
 
   private async getInitialQuestion(flags: any): Promise<string> {
@@ -174,7 +174,7 @@ export default class Ask extends Command {
     }
   }
 
-  private truncateHistory(messages: { role: string; content: string }[], maxTokens = 4096): { role: string; content: string }[] {
+  private truncateHistory(messages: { role: string; content: string }[], maxTokens = 12288): { role: string; content: string }[] {
     let totalTokens = 0;
 
     // Traverse messages backwards and include only allowed context
