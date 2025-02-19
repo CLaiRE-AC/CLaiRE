@@ -96,6 +96,7 @@ export default class Ask extends Command {
       questionParts.push(`Input file:\t(${filePath}):\n${fileContent}`);
     }
 
+
     const question = questionParts.join("\n---\n");
     if (!question) {
       this.error("No valid question provided after processing inputs.");
@@ -174,7 +175,7 @@ export default class Ask extends Command {
     }
   }
 
-  private truncateHistory(messages: { role: string; content: string }[], maxTokens = 12288): { role: string; content: string }[] {
+  private truncateHistory(messages: { role: string; content: string }[], maxTokens = 15000): { role: string; content: string }[] {
     let totalTokens = 0;
 
     // Traverse messages backwards and include only allowed context
