@@ -106,21 +106,28 @@ export default class Ask extends Command {
   }
 
   /**
-   * 🎯 Get User Input (Prompt or File Content)
+   * 🎯 Get User Input (Prompt and/or File Content)
    */
   private async getInitialQuestion(flags: any): Promise<string> {
-    if (flags.prompt) {
-      return flags.prompt.trim();
-    }
+    let prompt = flags.prompt ? flags.prompt.trim() : "";
+    let fileContent = "";
 
     if (flags.inputFile) {
       const fs = await import("fs/promises");
       try {
-        return (await fs.readFile(flags.inputFile, "utf-8")).trim();
+        fileContent = (await fs.readFile(flags.inputFile, "utf-8")).trim();
       } catch (error) {
         this.error(`❌ Failed to read input file: ${flags.inputFile}`);
       }
     }
+
+    // Combine both prompt and file content if available
+    if (prompt && fileContent !== "") {
+      return `${prompt}\n\n---\n📄 **File Content:**\n${fileContent}`;
+    }
+
+    if (prompt) return prompt;
+    if (fileContent) return fileContent;
 
     // Ask for the prompt if nothing is provided
     const { userPrompt } = await inquirer.prompt([
