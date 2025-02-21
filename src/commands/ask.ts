@@ -48,7 +48,7 @@ export default class Ask extends Command {
     this.log(response);
 
     // Save the conversation for history
-    // saveQuestion(question, response);
+    saveQuestion(question, response);
     // saveConversation(messages);
   }
 
