@@ -5,8 +5,8 @@ import path from "path";
 const CONFIG_FILE = path.join(os.homedir(), ".claire", "config.json");
 
 export type ConfigData = {
-  openai_api_key?: string;
   email?: string;
+  authToken?: string;
 };
 
 /**

@@ -1,215 +1,132 @@
 import { Command, Flags } from "@oclif/core";
 import axios, { AxiosError } from "axios";
-import fs from "fs";
-import path from "path";
 import inquirer from "inquirer";
+import cliSpinners from "cli-spinners"; // Animated status indicator
+import ora from "ora"; // Loading spinner
 import { loadConfig } from "../utils/config.js";
-import { formatCodeBlocks } from "../utils/codeFormatter.js";
-import { loadConversation, saveConversation, saveQuestion, postConversationToAPI } from "../utils/conversation.js";
+import { loadConversation, saveConversation, saveQuestion } from "../utils/conversation.js";
 
 export default class Ask extends Command {
-  static description = "Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.";
+  static description = "Send a prompt to Claire API and retrieve a response.";
 
   static flags = {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
     inputFile: Flags.string({ char: "F", description: "Path to a file containing the question input" }),
-    model: Flags.string({ char: "m", description: "OpenAI model", default: "chatgpt-4o-latest" }),
+    model: Flags.string({ char: "m", description: "Claire API model selection", default: "default-model" }),
     nocontext: Flags.boolean({ description: "Bypass reading project conversation history" }),
     interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" }),
-    api: Flags.boolean({ description: "Save question and response to CLaiRE Rails API" }),
-    apiHost: Flags.string({ char: "h", description: "Hostname for CLaiRE Rails API", default: "http://localhost:3000" }),
+    apiHost: Flags.string({ char: "h", description: "Hostname for Claire API", default: "http://localhost:3000" }),
   };
 
   async run() {
     const { flags } = await this.parse(Ask);
     const config = loadConfig();
-    const apiKey = config.openai_api_key;
+    const apiHost = flags.apiHost || config.apiHost;
+    const authToken = config.authToken;
 
-    if (!apiKey) {
-      this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");
+    if (!authToken) {
+      this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
     }
 
-    let messages = flags.nocontext ? [] : loadConversation();
-
-    if (flags.interactive) {
-      messages = await this.interactiveHistorySelection(messages);
-    }
-
+    // Ensure user provides a prompt or input file
     let question = await this.getInitialQuestion(flags);
+    let messages = flags.nocontext ? [] : loadConversation();
 
     messages.push({ role: "user", content: question });
 
-    while (true) {
-      const trimmedMessages = this.truncateHistory(messages);
-      const response = await this.getAIResponse(trimmedMessages, apiKey, flags.model);
-      this.log(formatCodeBlocks(response));
-      messages.push({ role: "assistant", content: response });
-
-      saveQuestion(question, response);
-
-      if (flags.api) {
-        await postConversationToAPI(question, response, flags.apiHost);
-      }
-
-      saveConversation(messages);
-
-      const { followUp } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "followUp",
-          message: "Would you like to ask a follow-up question?",
-          default: false,
-        },
-      ]);
-
-      if (!followUp) break;
-
-      const { followUpQuestion } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "followUpQuestion",
-          message: "Enter your follow-up question:",
-        },
-      ]);
-
-      messages.push({ role: "user", content: followUpQuestion.trim() });
+    // **1️⃣ Send Question to Claire API**
+    const questionId = await this.submitQuestion(apiHost, authToken, question);
+    if (!questionId) {
+      this.error("Failed to submit question to Claire API.");
     }
+
+    // **2️⃣ Fetch API Response with Polling**
+    const response = await this.pollForResponse(apiHost, authToken, questionId);
+
+    // **3️⃣ Display Response**
+    this.log("\n💡 Claire API Response:");
+    this.log(response);
+
+    // Save the conversation for history
+    // saveQuestion(question, response);
+    // saveConversation(messages);
   }
 
-  private async getInitialQuestion(flags: any): Promise<string> {
-    let promptProvided = flags.prompt;
-    let inputFileProvided = flags.inputFile;
-    let questionParts: string[] = [];
+  /**
+   * 🎯 Fetch API Response Using Polling Every 3 Seconds
+   */
+  private async pollForResponse(apiHost: string, authToken: string, questionId: number): Promise<string> {
+    const spinner = ora({ text: "🔄 Waiting for response from Claire API...", spinner: cliSpinners.dots }).start();
+    const maxRetries = 10; // Set a limit to prevent infinite loops
+    let attempt = 0;
 
-    // 1. If neither prompt nor inputFile is provided, ask for a user input.
-    if (!promptProvided && !inputFileProvided) {
-      const { userPrompt } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "userPrompt",
-          message: "Please enter a prompt:",
-        },
-      ]);
-      promptProvided = userPrompt.trim();
-    }
+    while (attempt < maxRetries) {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // Wait 3 seconds
+        const response = await axios.get(`${apiHost}/api/responses/${questionId}`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
 
-    // 2. Check if the prompt is a valid file; if so, treat it as an inputFile.
-    if (promptProvided) {
-      const possibleFilePath = path.resolve(promptProvided);
-      if (fs.existsSync(possibleFilePath) && fs.statSync(possibleFilePath).isFile()) {
-        inputFileProvided = possibleFilePath;  // Treat as file input.
-        promptProvided = undefined; // Clear direct prompt.
-      }
-    }
-
-    // 3. If a prompt exists, add it first (PRIORITY).
-    if (promptProvided) {
-      questionParts.push(`User Prompt:\n"${promptProvided.trim()}"\n`);
-    }
-
-    // 4. If an input file exists, add its contents below the prompt.
-    if (inputFileProvided) {
-      const filePath = path.resolve(inputFileProvided);
-      if (!fs.existsSync(filePath)) {
-        this.error(`Input file not found: ${filePath}`);
-      }
-      const fileContent = fs.readFileSync(filePath, "utf-8").trim();
-
-      questionParts.push(`\n---\nFile Content (${filePath}):\n${fileContent}\n---`);
-    }
-
-    const finalQuestion = questionParts.join("\n");
-
-    if (!finalQuestion) {
-      this.error("No valid question provided after processing inputs.");
-    }
-
-    return finalQuestion;
-  }
-
-  private async interactiveHistorySelection(messages: any[]) {
-    const history = loadConversation();
-    const questions = history
-      .map((entry, index) => (entry.role === "user" ? { name: entry.content, value: index } : undefined))
-      .filter((entry): entry is { name: string; value: number } => entry !== undefined);
-
-    if (questions.length > 0) {
-      const { selectedIndices } = await inquirer.prompt([
-        {
-          type: "checkbox",
-          name: "selectedIndices",
-          message: "Select previous questions to include in context:",
-          choices: questions,
-        },
-      ]);
-
-      for (const index of selectedIndices) {
-        messages.push(history[index]);
-        const responseIndex = index + 1;
-        if (responseIndex < history.length && history[responseIndex].role === "assistant") {
-          messages.push(history[responseIndex]);
+        if (response.data?.content) {
+          spinner.succeed("✅ Response received!");
+          return response.data.content;
+        }
+      } catch (error: any) {
+        if (error.response?.data?.errors?.includes("Response doesn't exist")) {
+          spinner.text = `⏳ Still waiting for Claire API response... [Attempt: ${attempt + 1}/10]`;
+        } else {
+          spinner.fail("❌ Error fetching response.");
+          throw error;
         }
       }
+
+      attempt++;
     }
 
-    return messages;
+    spinner.fail("❌ Timed out waiting for Claire API response.");
+    throw new Error("No response received from Claire API after multiple attempts.");
   }
 
-  private async getAIResponse(messages: any[], apiKey: string, model: string): Promise<string> {
+  /**
+   * 🎯 Submit User Question to Claire API
+   */
+  private async submitQuestion(apiHost: string, authToken: string, question: string): Promise<number | null> {
     try {
       const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: model,
-          messages: messages,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-        }
+        `${apiHost}/api/questions`,
+        { question: { content: question } },
+        { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
       );
 
-      return response.data.choices[0].message.content;
-    } catch (error: unknown) {
-      this.handleError(error);
-      return "An error occurred while fetching a response.";
+      return response.data?.id || null;
+    } catch (error) {
+      this.error(`❌ Error submitting question: ${(error as AxiosError).message}`);
+      return null;
     }
   }
 
-  private handleError(error: unknown): void {
-    if (error instanceof AxiosError) {
-      const status = error.response?.status;
-      const errorMessage = error.response?.data?.error?.message || error.message;
+  /**
+   * 🎯 Get User Input (Prompt or File Content)
+   */
+  private async getInitialQuestion(flags: any): Promise<string> {
+    if (flags.prompt) {
+      return flags.prompt.trim();
+    }
 
-      if (status === 429) {
-        this.error(`Rate limit exceeded: ${errorMessage}. Try again later.`);
-      } else if (status === 401) {
-        this.error(`Unauthorized: Check if your API key is valid.`);
-      } else {
-        this.error(`OpenAI API Error (Status ${status}): ${errorMessage}`);
+    if (flags.inputFile) {
+      const fs = await import("fs/promises");
+      try {
+        return (await fs.readFile(flags.inputFile, "utf-8")).trim();
+      } catch (error) {
+        this.error(`❌ Failed to read input file: ${flags.inputFile}`);
       }
-    } else if (error instanceof Error) {
-      this.error(`Unexpected Error: ${error.message}`);
-    } else {
-      this.error("An unknown error occurred.");
-    }
-  }
-
-  private truncateHistory(messages: { role: string; content: string }[], maxTokens = 15000): { role: string; content: string }[] {
-    let totalTokens = 0;
-    const truncated: { role: string; content: string }[] = [];
-
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const message = messages[i];
-      const tokenCount = message.content.split(" ").length;
-
-      if (totalTokens + tokenCount > maxTokens) break;
-      totalTokens += tokenCount;
-      truncated.unshift(message);
     }
 
-    return truncated;
+    // Ask for the prompt if nothing is provided
+    const { userPrompt } = await inquirer.prompt([
+      { type: "input", name: "userPrompt", message: "Please enter a prompt:" },
+    ]);
+
+    return userPrompt.trim();
   }
 }
