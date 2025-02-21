@@ -5,7 +5,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { loadConfig } from "../utils/config.js";
 import { formatCodeBlocks } from "../utils/codeFormatter.js";
-import { loadConversation, saveConversation, saveQuestion, postConversationToAPI } from "../utils/conversation.js"; // ✅ Updated import
+import { loadConversation, saveConversation, saveQuestion, postConversationToAPI } from "../utils/conversation.js";
 
 export default class Ask extends Command {
   static description = "Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.";
@@ -17,7 +17,7 @@ export default class Ask extends Command {
     nocontext: Flags.boolean({ description: "Bypass reading project conversation history" }),
     interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" }),
     api: Flags.boolean({ description: "Save question and response to CLaiRE Rails API" }),
-    apiHost: Flags.string({ char: "h", description: "Hostname for CLaiRE Rails API", default: "http://localhost:3000" })
+    apiHost: Flags.string({ char: "h", description: "Hostname for CLaiRE Rails API", default: "http://localhost:3000" }),
   };
 
   async run() {
@@ -29,10 +29,6 @@ export default class Ask extends Command {
       this.error("Missing OpenAI API key. Set it using `claire config -k YOUR_API_KEY`.");
     }
 
-    if (!flags.prompt && !flags.inputFile) {
-      this.error("You must provide a prompt using --prompt (-p) or specify an input file using --input-file (-F).");
-    }
-
     let messages = flags.nocontext ? [] : loadConversation();
 
     if (flags.interactive) {
@@ -40,6 +36,7 @@ export default class Ask extends Command {
     }
 
     let question = await this.getInitialQuestion(flags);
+
     messages.push({ role: "user", content: question });
 
     while (true) {
@@ -50,7 +47,6 @@ export default class Ask extends Command {
 
       saveQuestion(question, response);
 
-      // Post to CLaiRE API
       if (flags.api) {
         await postConversationToAPI(question, response, flags.apiHost);
       }
@@ -81,28 +77,54 @@ export default class Ask extends Command {
   }
 
   private async getInitialQuestion(flags: any): Promise<string> {
+    let promptProvided = flags.prompt;
+    let inputFileProvided = flags.inputFile;
     let questionParts: string[] = [];
 
-    if (flags.prompt) {
-      questionParts.push(`Prompt:\t${flags.prompt.trim()}`);
+    // 1. If neither prompt nor inputFile is provided, ask for a user input.
+    if (!promptProvided && !inputFileProvided) {
+      const { userPrompt } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "userPrompt",
+          message: "Please enter a prompt:",
+        },
+      ]);
+      promptProvided = userPrompt.trim();
     }
 
-    if (flags.inputFile) {
-      const filePath = path.resolve(flags.inputFile);
+    // 2. Check if the prompt is a valid file; if so, treat it as an inputFile.
+    if (promptProvided) {
+      const possibleFilePath = path.resolve(promptProvided);
+      if (fs.existsSync(possibleFilePath) && fs.statSync(possibleFilePath).isFile()) {
+        inputFileProvided = possibleFilePath;  // Treat as file input.
+        promptProvided = undefined; // Clear direct prompt.
+      }
+    }
+
+    // 3. If a prompt exists, add it first (PRIORITY).
+    if (promptProvided) {
+      questionParts.push(`User Prompt:\n"${promptProvided.trim()}"\n`);
+    }
+
+    // 4. If an input file exists, add its contents below the prompt.
+    if (inputFileProvided) {
+      const filePath = path.resolve(inputFileProvided);
       if (!fs.existsSync(filePath)) {
         this.error(`Input file not found: ${filePath}`);
       }
       const fileContent = fs.readFileSync(filePath, "utf-8").trim();
-      questionParts.push(`Input file:\t(${filePath}):\n${fileContent}`);
+
+      questionParts.push(`\n---\nFile Content (${filePath}):\n${fileContent}\n---`);
     }
 
+    const finalQuestion = questionParts.join("\n");
 
-    const question = questionParts.join("\n---\n");
-    if (!question) {
+    if (!finalQuestion) {
       this.error("No valid question provided after processing inputs.");
     }
 
-    return question;
+    return finalQuestion;
   }
 
   private async interactiveHistorySelection(messages: any[]) {
@@ -177,12 +199,11 @@ export default class Ask extends Command {
 
   private truncateHistory(messages: { role: string; content: string }[], maxTokens = 15000): { role: string; content: string }[] {
     let totalTokens = 0;
-
-    // Traverse messages backwards and include only allowed context
     const truncated: { role: string; content: string }[] = [];
+
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i];
-      const tokenCount = message.content.split(" ").length; // Approximate token estimation
+      const tokenCount = message.content.split(" ").length;
 
       if (totalTokens + tokenCount > maxTokens) break;
       totalTokens += tokenCount;
@@ -190,15 +211,5 @@ export default class Ask extends Command {
     }
 
     return truncated;
-  }
-
-  private safeReadHistory(filePath: string): { role: string; content: string }[] {
-    try {
-      const data = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(data) as { role: string; content: string }[];
-    } catch (error) {
-      this.warn(`Could not read history file. Resetting history.`);
-      return [];
-    }
   }
 }
