@@ -62,6 +62,9 @@
     ],
     "topicSeparator": ":",
     "topics": {
+      "api": {
+        "description": "Commands for interacting with CLaiRE API"
+      },
       "db": {
         "description": "Commands for interacting and administering the Sqlite3 database"
       },
