@@ -29,6 +29,9 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`claire api:invitation`](#claire-apiinvitation)
+* [`claire api:project`](#claire-apiproject)
+* [`claire api:team`](#claire-apiteam)
 * [`claire ask`](#claire-ask)
 * [`claire config`](#claire-config)
 * [`claire db:import-history`](#claire-dbimport-history)
@@ -37,6 +40,8 @@ USAGE
 * [`claire db:view-logs`](#claire-dbview-logs)
 * [`claire git:generate-patch`](#claire-gitgenerate-patch)
 * [`claire help [COMMAND]`](#claire-help-command)
+* [`claire info`](#claire-info)
+* [`claire init`](#claire-init)
 * [`claire plugins`](#claire-plugins)
 * [`claire plugins:add PLUGIN`](#claire-pluginsadd-plugin)
 * [`claire plugins:inspect PLUGIN...`](#claire-pluginsinspect-plugin)
@@ -47,27 +52,97 @@ USAGE
 * [`claire plugins:uninstall [PLUGIN]`](#claire-pluginsuninstall-plugin)
 * [`claire plugins:unlink [PLUGIN]`](#claire-pluginsunlink-plugin)
 * [`claire plugins:update`](#claire-pluginsupdate)
+* [`claire project:set PROJECTNAME`](#claire-projectset-projectname)
 * [`claire view`](#claire-view)
 
-## `claire ask`
+## `claire api:invitation`
 
-Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.
+Manage invitations (list, show, create)
 
 ```
 USAGE
-  $ claire ask [-p <value>] [-F <value>] [-m <value>] [-s] [-r] [-i] [-f <value>]
+  $ claire api:invitation [--list] [--show <value>] [--create] [--email <value>] [--team_id <value>] [--project_id
+    <value>]
+
+FLAGS
+  --create              Create a new invitation
+  --email=<value>       Email of the invitee
+  --list                List all invitations
+  --project_id=<value>  Project ID
+  --show=<value>        Show a specific invitation by ID
+  --team_id=<value>     Team ID
+
+DESCRIPTION
+  Manage invitations (list, show, create)
+```
+
+_See code: [src/commands/api/invitation.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/invitation.ts)_
+
+## `claire api:project`
+
+Manage projects (list, show, create)
+
+```
+USAGE
+  $ claire api:project [--list] [--show <value>] [--create] [--name <value>] [--description <value>]
+    [--token_spend_limit <value>] [--team_id <value>]
+
+FLAGS
+  --create                     Create a new project
+  --description=<value>        Project description
+  --list                       List all projects
+  --name=<value>               Project name
+  --show=<value>               Show a specific project by ID
+  --team_id=<value>            Team ID
+  --token_spend_limit=<value>  Token spend limit (default 100000)
+
+DESCRIPTION
+  Manage projects (list, show, create)
+```
+
+_See code: [src/commands/api/project.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project.ts)_
+
+## `claire api:team`
+
+Manage teams (list, show, create)
+
+```
+USAGE
+  $ claire api:team [--list] [--show <value>] [--create] [--name <value>] [--description <value>]
+    [--token_spend_limit <value>]
+
+FLAGS
+  --create                     Create a new team
+  --description=<value>        Team description
+  --list                       List all teams
+  --name=<value>               Team name
+  --show=<value>               Show a specific team by ID
+  --token_spend_limit=<value>  Token spend limit (default 100000)
+
+DESCRIPTION
+  Manage teams (list, show, create)
+```
+
+_See code: [src/commands/api/team.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team.ts)_
+
+## `claire ask`
+
+Send a prompt to Claire API and retrieve a response.
+
+```
+USAGE
+  $ claire ask [-p <value>] [-F <value>] [-m <value>] [--nocontext] [-i] [-h <value>]
 
 FLAGS
   -F, --inputFile=<value>  Path to a file containing the question input
-  -f, --file=<value>       [default: /Users/himnme/.claire/history.json] Optional file path to save conversation history
+  -h, --apiHost=<value>    [default: http://localhost:3000] Hostname for Claire API
   -i, --interactive        Interactively select previous questions for context
-  -m, --model=<value>      [default: chatgpt-4o-latest] OpenAI model
+  -m, --model=<value>      [default: default-model] Claire API model selection
   -p, --prompt=<value>     Prompt to send
-  -r, --readHistory        Include entire conversation history in context
-  -s, --save               Save conversation history automatically
+      --nocontext          Bypass reading project conversation history
 
 DESCRIPTION
-  Send a prompt to OpenAI and maintain conversation history, with optional follow-ups.
+  Send a prompt to Claire API and retrieve a response.
 ```
 
 _See code: [src/commands/ask.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/ask.ts)_
@@ -78,13 +153,12 @@ Configure API key and email for automatic use.
 
 ```
 USAGE
-  $ claire config [-k <value>] [-e <value>] [-h <value>] [-s]
+  $ claire config [-k <value>] [-e <value>] [-s]
 
 FLAGS
-  -e, --email=<value>        Set user email
-  -h, --historyFile=<value>  Set conversation history file
-  -k, --apiKey=<value>       Set OpenAI API key
-  -s, --show                 Show current config
+  -e, --email=<value>      Set user email
+  -k, --authToken=<value>  Set CLaiRE API key
+  -s, --show               Show current config
 
 DESCRIPTION
   Configure API key and email for automatic use.
@@ -190,6 +264,34 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.25/src/commands/help.ts)_
+
+## `claire info`
+
+Display current project and configuration information.
+
+```
+USAGE
+  $ claire info
+
+DESCRIPTION
+  Display current project and configuration information.
+```
+
+_See code: [src/commands/info.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/info.ts)_
+
+## `claire init`
+
+Initialize CLaiRE CLI.
+
+```
+USAGE
+  $ claire init
+
+DESCRIPTION
+  Initialize CLaiRE CLI.
+```
+
+_See code: [src/commands/init.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/init.ts)_
 
 ## `claire plugins`
 
@@ -481,16 +583,32 @@ DESCRIPTION
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/update.ts)_
 
+## `claire project:set PROJECTNAME`
+
+Set the current project for Claire.
+
+```
+USAGE
+  $ claire project:set PROJECTNAME
+
+ARGUMENTS
+  PROJECTNAME  Project name
+
+DESCRIPTION
+  Set the current project for Claire.
+```
+
+_See code: [src/commands/project/set.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/project/set.ts)_
+
 ## `claire view`
 
 View saved questions interactively and display responses.
 
 ```
 USAGE
-  $ claire view [-f <value>] [-s <value>]
+  $ claire view [-s <value>]
 
 FLAGS
-  -f, --file=<value>    [default: /Users/himnme/.claire/history.json] Path to conversation history file
   -s, --search=<value>  Search for a question containing this keyword
 
 DESCRIPTION
