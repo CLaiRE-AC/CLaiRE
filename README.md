@@ -29,9 +29,15 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`claire api:invitation`](#claire-apiinvitation)
-* [`claire api:project`](#claire-apiproject)
+* [`claire api:invitation:create`](#claire-apiinvitationcreate)
+* [`claire api:invitation:list`](#claire-apiinvitationlist)
+* [`claire api:project:create`](#claire-apiprojectcreate)
+* [`claire api:project:list`](#claire-apiprojectlist)
+* [`claire api:project:show`](#claire-apiprojectshow)
 * [`claire api:team`](#claire-apiteam)
+* [`claire api:team:create`](#claire-apiteamcreate)
+* [`claire api:team:list`](#claire-apiteamlist)
+* [`claire api:team:show`](#claire-apiteamshow)
 * [`claire ask`](#claire-ask)
 * [`claire config`](#claire-config)
 * [`claire db:import-history`](#claire-dbimport-history)
@@ -55,52 +61,93 @@ USAGE
 * [`claire project:set PROJECTNAME`](#claire-projectset-projectname)
 * [`claire view`](#claire-view)
 
-## `claire api:invitation`
+## `claire api:invitation:create`
 
 Manage invitations (list, show, create)
 
 ```
 USAGE
-  $ claire api:invitation [--list] [--show <value>] [--create] [--email <value>] [--team_id <value>] [--project_id
-    <value>]
+  $ claire api:invitation:create [--email <value>] [--team_id <value>] [--project_id <value>]
 
 FLAGS
-  --create              Create a new invitation
   --email=<value>       Email of the invitee
-  --list                List all invitations
   --project_id=<value>  Project ID
-  --show=<value>        Show a specific invitation by ID
   --team_id=<value>     Team ID
 
 DESCRIPTION
   Manage invitations (list, show, create)
 ```
 
-_See code: [src/commands/api/invitation.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/invitation.ts)_
+_See code: [src/commands/api/invitation/create.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/invitation/create.ts)_
 
-## `claire api:project`
+## `claire api:invitation:list`
 
-Manage projects (list, show, create)
+Manage invitations (list, show, create)
 
 ```
 USAGE
-  $ claire api:project [--list] [--show <value>] [--create] [--name <value>] [--description <value>]
-    [--token_spend_limit <value>] [--team_id <value>]
+  $ claire api:invitation:list [-t <value>] [-p <value>]
 
 FLAGS
-  --create                     Create a new project
+  -p, --project_id=<value>  Project ID
+  -t, --team_id=<value>     Team ID
+
+DESCRIPTION
+  Manage invitations (list, show, create)
+```
+
+_See code: [src/commands/api/invitation/list.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/invitation/list.ts)_
+
+## `claire api:project:create`
+
+Create new project in CLaiRE API
+
+```
+USAGE
+  $ claire api:project:create [--name <value>] [--description <value>] [--token_spend_limit <value>] [--team_id <value>]
+
+FLAGS
   --description=<value>        Project description
-  --list                       List all projects
   --name=<value>               Project name
-  --show=<value>               Show a specific project by ID
   --team_id=<value>            Team ID
   --token_spend_limit=<value>  Token spend limit (default 100000)
 
 DESCRIPTION
-  Manage projects (list, show, create)
+  Create new project in CLaiRE API
 ```
 
-_See code: [src/commands/api/project.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project.ts)_
+_See code: [src/commands/api/project/create.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/create.ts)_
+
+## `claire api:project:list`
+
+List all projects from CLaiRE API
+
+```
+USAGE
+  $ claire api:project:list
+
+DESCRIPTION
+  List all projects from CLaiRE API
+```
+
+_See code: [src/commands/api/project/list.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/list.ts)_
+
+## `claire api:project:show`
+
+Show information for CLaiRE project
+
+```
+USAGE
+  $ claire api:project:show [-p <value>]
+
+FLAGS
+  -p, --project=<value>  Show a specific project
+
+DESCRIPTION
+  Show information for CLaiRE project
+```
+
+_See code: [src/commands/api/project/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/show.ts)_
 
 ## `claire api:team`
 
@@ -125,21 +172,71 @@ DESCRIPTION
 
 _See code: [src/commands/api/team.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team.ts)_
 
+## `claire api:team:create`
+
+Manage teams (list, show, create)
+
+```
+USAGE
+  $ claire api:team:create [--name <value>] [--description <value>] [--token_spend_limit <value>]
+
+FLAGS
+  --description=<value>        Team description
+  --name=<value>               Team name
+  --token_spend_limit=<value>  Token spend limit (default 100000)
+
+DESCRIPTION
+  Manage teams (list, show, create)
+```
+
+_See code: [src/commands/api/team/create.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team/create.ts)_
+
+## `claire api:team:list`
+
+Manage teams (list, show, create)
+
+```
+USAGE
+  $ claire api:team:list
+
+DESCRIPTION
+  Manage teams (list, show, create)
+```
+
+_See code: [src/commands/api/team/list.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team/list.ts)_
+
+## `claire api:team:show`
+
+Manage teams (list, show, create)
+
+```
+USAGE
+  $ claire api:team:show [-t <value>]
+
+FLAGS
+  -t, --team=<value>  Show a specific team
+
+DESCRIPTION
+  Manage teams (list, show, create)
+```
+
+_See code: [src/commands/api/team/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team/show.ts)_
+
 ## `claire ask`
 
 Send a prompt to Claire API and retrieve a response.
 
 ```
 USAGE
-  $ claire ask [-p <value>] [-F <value>] [-m <value>] [--nocontext] [-i] [-h <value>]
+  $ claire ask [-p <value>] [-F <value>...] [-m <value>] [--nocontext] [-i] [-h <value>]
 
 FLAGS
-  -F, --inputFile=<value>  Path to a file containing the question input
-  -h, --apiHost=<value>    [default: http://localhost:3000] Hostname for Claire API
-  -i, --interactive        Interactively select previous questions for context
-  -m, --model=<value>      [default: default-model] Claire API model selection
-  -p, --prompt=<value>     Prompt to send
-      --nocontext          Bypass reading project conversation history
+  -F, --inputFile=<value>...  Path to a file containing the question input
+  -h, --apiHost=<value>       [default: http://localhost:3000] Hostname for Claire API
+  -i, --interactive           Interactively select previous questions for context
+  -m, --model=<value>         [default: default-model] Claire API model selection
+  -p, --prompt=<value>        Prompt to send
+      --nocontext             Bypass reading project conversation history
 
 DESCRIPTION
   Send a prompt to Claire API and retrieve a response.
