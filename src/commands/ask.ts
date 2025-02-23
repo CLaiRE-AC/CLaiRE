@@ -92,7 +92,7 @@ export default class Ask extends Command {
     try {
       const response = await axios.post(
         `${apiHost}/questions`,
-        { question: { content: question, project_id: 1 } },
+        { question: { content: question } },
         { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
       );
 
