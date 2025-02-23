@@ -3,8 +3,6 @@ import axios from 'axios';
 import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
 
-const API_URL = 'http://localhost:3000/api';
-
 export default class Invitation extends Command {
 	static description = 'Manage invitations (list, show, create)';
 
@@ -17,14 +15,14 @@ export default class Invitation extends Command {
 	async run() {
 		const { flags } = await this.parse(Invitation);
 		const config = loadConfig();
-
 		const authToken = config.authToken;
+		const apiUrl = config.apiUrl;
 
 		if (!authToken) {
 			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
-		const teamsResponse = await axios.get(`${API_URL}/teams`, {
+		const teamsResponse = await axios.get(`${apiUrl}/teams`, {
 			headers: { Authorization: `Bearer ${authToken}` }
 		});
 		const teams = teamsResponse.data;
@@ -32,7 +30,7 @@ export default class Invitation extends Command {
 			{ name: 'team_id', message: 'Select a team:', type: 'list', choices: teams.map((team: any) => ({ name: team.name, value: team.id })) },
 		]);
 
-		const projectsResponse = await axios.get(`${API_URL}/projects`, {
+		const projectsResponse = await axios.get(`${apiUrl}/projects`, {
 			headers: { Authorization: `Bearer ${authToken}` }
 		});
 		const projects = projectsResponse.data;
@@ -55,7 +53,7 @@ export default class Invitation extends Command {
 			},
 		};
 
-		const response = await axios.post(`${API_URL}/invitations`, payload, {
+		const response = await axios.post(`${apiUrl}/invitations`, payload, {
 			headers: { Authorization: `Bearer ${authToken}` }
 		});
 		this.log('Invitation sent successfully:', JSON.stringify(response.data, null, 2));

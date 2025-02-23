@@ -3,7 +3,7 @@ import axios from 'axios';
 import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
 
-const API_URL = 'http://localhost:3000/api';
+const apiUrl = 'http://localhost:3000/api';
 
 export default class Invitation extends Command {
 	static description = 'Manage invitations (list, show, create)';
@@ -16,15 +16,15 @@ export default class Invitation extends Command {
 	async run() {
 		const { flags } = await this.parse(Invitation);
 		const config = loadConfig();
-
 		const authToken = config.authToken;
+		const apiUrl = config.apiUrl;
 
 		if (!authToken) {
 			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
 		if (flags.team_id || flags.project_id) {
-			let requestUrl = `${API_URL}/invitations/`;
+			let requestUrl = `${apiUrl}/invitations/`;
 			if(flags.team_id) {
 				requestUrl += `team/${flags.team_id}`;
 			} else {
@@ -37,7 +37,7 @@ export default class Invitation extends Command {
 			return;
 		}
 
-		const response = await axios.get(`${API_URL}/invitations`, {
+		const response = await axios.get(`${apiUrl}/invitations`, {
 			headers: { Authorization: `Bearer ${authToken}` }
 		});
 		this.log(JSON.stringify(response.data, null, 2));

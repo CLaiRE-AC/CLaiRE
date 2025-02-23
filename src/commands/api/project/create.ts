@@ -3,8 +3,6 @@ import axios from 'axios';
 import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
 
-const API_URL = 'http://localhost:3000/api';
-
 export default class Project extends Command {
 	static description = 'Create new project in CLaiRE API';
 
@@ -18,8 +16,8 @@ export default class Project extends Command {
 	async run() {
 		const { flags } = await this.parse(Project);
 		const config = loadConfig();
-
 		const authToken = config.authToken;
+		const apiUrl = config.apiUrl;
 
 		if (!authToken) {
 			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
@@ -28,7 +26,7 @@ export default class Project extends Command {
 		let teamId = flags.team_id;
 
 		if (!teamId) {
-			const teamsResponse = await axios.get(`${API_URL}/teams`, {
+			const teamsResponse = await axios.get(`${apiUrl}/teams`, {
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 			const teams = teamsResponse.data;
@@ -56,7 +54,7 @@ export default class Project extends Command {
 			},
 		};
 
-		const response = await axios.post(`${API_URL}/projects`, payload, {
+		const response = await axios.post(`${apiUrl}/projects`, payload, {
 			headers: { Authorization: `Bearer ${authToken}` }
 		});
 		this.log('Project created successfully:', JSON.stringify(response.data, null, 2));

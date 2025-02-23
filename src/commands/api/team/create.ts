@@ -3,8 +3,6 @@ import axios from 'axios';
 import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
 
-const API_URL = 'http://localhost:3000/api'; // Change to your actual API URL
-
 export default class Team extends Command {
 	static description = 'Manage teams (list, show, create)';
 
@@ -17,8 +15,9 @@ export default class Team extends Command {
 	async run() {
 		const { flags } = await this.parse(Team);
 		const config = loadConfig();
-
 		const authToken = config.authToken;
+		const apiUrl = config.apiUrl;
+
 		if (!authToken) {
 			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
@@ -37,7 +36,7 @@ export default class Team extends Command {
 			},
 		};
 
-		const response = await axios.post(`${API_URL}/teams`, payload, {
+		const response = await axios.post(`${apiUrl}/teams`, payload, {
 			headers: { Authorization: `Bearer ${authToken}` }
 		});
 		this.log('Team created successfully:', JSON.stringify(response.data, null, 2));

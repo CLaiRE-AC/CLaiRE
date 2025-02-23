@@ -34,7 +34,6 @@ USAGE
 * [`claire api:project:create`](#claire-apiprojectcreate)
 * [`claire api:project:list`](#claire-apiprojectlist)
 * [`claire api:project:show`](#claire-apiprojectshow)
-* [`claire api:team`](#claire-apiteam)
 * [`claire api:team:create`](#claire-apiteamcreate)
 * [`claire api:team:list`](#claire-apiteamlist)
 * [`claire api:team:show`](#claire-apiteamshow)
@@ -149,29 +148,6 @@ DESCRIPTION
 
 _See code: [src/commands/api/project/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/show.ts)_
 
-## `claire api:team`
-
-Manage teams (list, show, create)
-
-```
-USAGE
-  $ claire api:team [--list] [--show <value>] [--create] [--name <value>] [--description <value>]
-    [--token_spend_limit <value>]
-
-FLAGS
-  --create                     Create a new team
-  --description=<value>        Team description
-  --list                       List all teams
-  --name=<value>               Team name
-  --show=<value>               Show a specific team by ID
-  --token_spend_limit=<value>  Token spend limit (default 100000)
-
-DESCRIPTION
-  Manage teams (list, show, create)
-```
-
-_See code: [src/commands/api/team.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team.ts)_
-
 ## `claire api:team:create`
 
 Manage teams (list, show, create)
@@ -246,19 +222,19 @@ _See code: [src/commands/ask.ts](https://github.com/netuoso/claire/claire/blob/v
 
 ## `claire config`
 
-Configure API key and email for automatic use.
+Configure API settings such as API key, email, and API URL.
 
 ```
 USAGE
-  $ claire config [-k <value>] [-e <value>] [-s]
+  $ claire config [-k <value>] [-e <value>] [-u <value>]
 
 FLAGS
   -e, --email=<value>      Set user email
   -k, --authToken=<value>  Set CLaiRE API key
-  -s, --show               Show current config
+  -u, --apiUrl=<value>     Set API base URL
 
 DESCRIPTION
-  Configure API key and email for automatic use.
+  Configure API settings such as API key, email, and API URL.
 ```
 
 _See code: [src/commands/config.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/config.ts)_
