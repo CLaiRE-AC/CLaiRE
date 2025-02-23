@@ -29,6 +29,8 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`claire api:config:get`](#claire-apiconfigget)
+* [`claire api:config:set`](#claire-apiconfigset)
 * [`claire api:invitation:create`](#claire-apiinvitationcreate)
 * [`claire api:invitation:list`](#claire-apiinvitationlist)
 * [`claire api:project:create`](#claire-apiprojectcreate)
@@ -59,6 +61,38 @@ USAGE
 * [`claire plugins:update`](#claire-pluginsupdate)
 * [`claire project:set PROJECTNAME`](#claire-projectset-projectname)
 * [`claire view`](#claire-view)
+
+## `claire api:config:get`
+
+Manage teams (list, show, create)
+
+```
+USAGE
+  $ claire api:config:get
+
+DESCRIPTION
+  Manage teams (list, show, create)
+```
+
+_See code: [src/commands/api/config/get.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/config/get.ts)_
+
+## `claire api:config:set`
+
+Manage teams (list, show, create)
+
+```
+USAGE
+  $ claire api:config:set [-t <value>] [-p <value>]
+
+FLAGS
+  -p, --project_id=<value>  Set project to use with CLaiRE API
+  -t, --team_id=<value>     Set team to use with CLaiRE API
+
+DESCRIPTION
+  Manage teams (list, show, create)
+```
+
+_See code: [src/commands/api/config/set.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/config/set.ts)_
 
 ## `claire api:invitation:create`
 
