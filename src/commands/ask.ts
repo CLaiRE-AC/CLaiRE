@@ -11,18 +11,17 @@ export default class Ask extends Command {
 
   static flags = {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
-    inputFile: Flags.string({ char: "F", description: "Path to a file containing the question input" }),
+    inputFile: Flags.string({ char: "F", description: "Path to file(s) containing the question input", multiple: true }),
     model: Flags.string({ char: "m", description: "Claire API model selection", default: "default-model" }),
     nocontext: Flags.boolean({ description: "Bypass reading project conversation history" }),
-    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" }),
-    apiHost: Flags.string({ char: "h", description: "Hostname for Claire API", default: "http://localhost:3000" }),
+    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" })
   };
 
   async run() {
     const { flags } = await this.parse(Ask);
     const config = loadConfig();
-    const apiHost = flags.apiHost || config.apiHost;
     const authToken = config.authToken;
+    const apiHost = config.apiUrl;
 
     if (!authToken) {
       this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
@@ -49,7 +48,6 @@ export default class Ask extends Command {
 
     // Save the conversation for history
     saveQuestion(question, response);
-    // saveConversation(messages);
   }
 
   /**
@@ -57,13 +55,13 @@ export default class Ask extends Command {
    */
   private async pollForResponse(apiHost: string, authToken: string, questionId: number): Promise<string> {
     const spinner = ora({ text: "🔄 Waiting for response from Claire API...", spinner: cliSpinners.dots }).start();
-    const maxRetries = 10; // Set a limit to prevent infinite loops
+    const maxRetries = 10;
     let attempt = 0;
 
     while (attempt < maxRetries) {
       try {
         await new Promise((resolve) => setTimeout(resolve, 3000)); // Wait 3 seconds
-        const response = await axios.get(`${apiHost}/api/responses/${questionId}`, {
+        const response = await axios.get(`${apiHost}/responses/${questionId}`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
@@ -93,8 +91,8 @@ export default class Ask extends Command {
   private async submitQuestion(apiHost: string, authToken: string, question: string): Promise<number | null> {
     try {
       const response = await axios.post(
-        `${apiHost}/api/questions`,
-        { question: { content: question } },
+        `${apiHost}/questions`,
+        { question: { content: question, project_id: 1 } },
         { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
       );
 
@@ -110,24 +108,28 @@ export default class Ask extends Command {
    */
   private async getInitialQuestion(flags: any): Promise<string> {
     let prompt = flags.prompt ? flags.prompt.trim() : "";
-    let fileContent = "";
+    let fileContents = [];
 
-    if (flags.inputFile) {
+    if (flags.inputFile && flags.inputFile.length > 0) {
       const fs = await import("fs/promises");
-      try {
-        fileContent = (await fs.readFile(flags.inputFile, "utf-8")).trim();
-      } catch (error) {
-        this.error(`❌ Failed to read input file: ${flags.inputFile}`);
+
+      for (const filePath of flags.inputFile) {
+        try {
+          const content = (await fs.readFile(filePath, "utf-8")).trim();
+          fileContents.push(`📄 **File: ${filePath}**\n${content}`);
+        } catch (error) {
+          this.error(`❌ Failed to read input file: ${filePath}`);
+        }
       }
     }
 
-    // Combine both prompt and file content if available
-    if (prompt && fileContent !== "") {
-      return `${prompt}\n\n---\n📄 **File Content:**\n${fileContent}`;
+    let combinedQuestion = prompt;
+
+    if (fileContents.length > 0) {
+      combinedQuestion += `\n\n---\n${fileContents.join("\n\n---\n")}`;
     }
 
-    if (prompt) return prompt;
-    if (fileContent) return fileContent;
+    if (combinedQuestion.trim()) return combinedQuestion;
 
     // Ask for the prompt if nothing is provided
     const { userPrompt } = await inquirer.prompt([

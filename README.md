@@ -204,11 +204,10 @@ Send a prompt to Claire API and retrieve a response.
 
 ```
 USAGE
-  $ claire ask [-p <value>] [-F <value>...] [-m <value>] [--nocontext] [-i] [-h <value>]
+  $ claire ask [-p <value>] [-F <value>...] [-m <value>] [--nocontext] [-i]
 
 FLAGS
-  -F, --inputFile=<value>...  Path to a file containing the question input
-  -h, --apiHost=<value>       [default: http://localhost:3000] Hostname for Claire API
+  -F, --inputFile=<value>...  Path to file(s) containing the question input
   -i, --interactive           Interactively select previous questions for context
   -m, --model=<value>         [default: default-model] Claire API model selection
   -p, --prompt=<value>        Prompt to send
