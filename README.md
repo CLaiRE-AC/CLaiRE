@@ -137,13 +137,13 @@ Create new project in CLaiRE API
 
 ```
 USAGE
-  $ claire api:project:create [--name <value>] [--description <value>] [--token_spend_limit <value>] [--team_id <value>]
+  $ claire api:project:create [--name <value>] [--description <value>] [--token_allowance <value>] [--team_id <value>]
 
 FLAGS
-  --description=<value>        Project description
-  --name=<value>               Project name
-  --team_id=<value>            Team ID
-  --token_spend_limit=<value>  Token spend limit (default 100000)
+  --description=<value>      Project description
+  --name=<value>             Project name
+  --team_id=<value>          Team ID
+  --token_allowance=<value>  Token spend limit (default 100000)
 
 DESCRIPTION
   Create new project in CLaiRE API
@@ -188,12 +188,12 @@ Manage teams (list, show, create)
 
 ```
 USAGE
-  $ claire api:team:create [--name <value>] [--description <value>] [--token_spend_limit <value>]
+  $ claire api:team:create [--name <value>] [--description <value>] [--token_allowance <value>]
 
 FLAGS
-  --description=<value>        Team description
-  --name=<value>               Team name
-  --token_spend_limit=<value>  Token spend limit (default 100000)
+  --description=<value>      Team description
+  --name=<value>             Team name
+  --token_allowance=<value>  Token spend limit (default 100000)
 
 DESCRIPTION
   Manage teams (list, show, create)

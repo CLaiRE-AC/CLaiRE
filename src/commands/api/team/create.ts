@@ -9,7 +9,7 @@ export default class Team extends Command {
 	static flags = {
 		name: Flags.string({ description: 'Team name' }),
 		description: Flags.string({ description: 'Team description' }),
-		token_spend_limit: Flags.integer({ description: 'Token spend limit (default 100000)' }),
+		token_allowance: Flags.integer({ description: 'Token spend limit (default 100000)' }),
 	};
 
 	async run() {
@@ -25,14 +25,14 @@ export default class Team extends Command {
 		const answers = await inquirer.prompt([
 			{ name: 'name', message: 'Enter team name:', type: 'input', when: !flags.name },
 			{ name: 'description', message: 'Enter team description:', type: 'input', when: !flags.description },
-			{ name: 'token_spend_limit', message: 'Enter token spend limit (default 100000):', type: 'number', when: !flags.token_spend_limit, default: 100000 },
+			{ name: 'token_allowance', message: 'Enter token spend limit (default 100000):', type: 'number', when: !flags.token_allowance, default: 100000 },
 		]);
 
 		const payload = {
 			team: {
 				name: flags.name || answers.name,
 				description: flags.description || answers.description,
-				token_spend_limit: flags.token_spend_limit || answers.token_spend_limit,
+				token_allowance: flags.token_allowance || answers.token_allowance,
 			},
 		};
 

@@ -9,7 +9,7 @@ export default class Project extends Command {
 	static flags = {
 		name: Flags.string({ description: 'Project name' }),
 		description: Flags.string({ description: 'Project description' }),
-		token_spend_limit: Flags.integer({ description: 'Token spend limit (default 100000)' }),
+		token_allowance: Flags.integer({ description: 'Token spend limit (default 100000)' }),
 		team_id: Flags.string({ description: 'Team ID' }),
 	};
 
@@ -42,14 +42,14 @@ export default class Project extends Command {
 		const answers = await inquirer.prompt([
 			{ name: 'name', message: 'Enter project name:', type: 'input', when: !flags.name },
 			{ name: 'description', message: 'Enter project description:', type: 'input', when: !flags.description },
-			{ name: 'token_spend_limit', message: 'Enter token spend limit (default 100000):', type: 'number', when: !flags.token_spend_limit, default: 100000 },
+			{ name: 'token_allowance', message: 'Enter token spend limit (default 100000):', type: 'number', when: !flags.token_allowance, default: 100000 },
 		]);
 
 		const payload = {
 			project: {
 				name: flags.name || answers.name,
 				description: flags.description || answers.description,
-				token_spend_limit: flags.token_spend_limit || answers.token_spend_limit,
+				token_allowance: flags.token_allowance || answers.token_allowance,
 				team_id: teamId,
 			},
 		};
