@@ -37,6 +37,7 @@ USAGE
 * [`claire api:project:list`](#claire-apiprojectlist)
 * [`claire api:project:set`](#claire-apiprojectset)
 * [`claire api:project:show`](#claire-apiprojectshow)
+* [`claire api:question:show QUESTIONID`](#claire-apiquestionshow-questionid)
 * [`claire api:team:create`](#claire-apiteamcreate)
 * [`claire api:team:list`](#claire-apiteamlist)
 * [`claire api:team:show`](#claire-apiteamshow)
@@ -196,6 +197,23 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/api/project/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/show.ts)_
+
+## `claire api:question:show QUESTIONID`
+
+Show details for CLaiRE question
+
+```
+USAGE
+  $ claire api:question:show QUESTIONID
+
+ARGUMENTS
+  QUESTIONID  ID of question to display
+
+DESCRIPTION
+  Show details for CLaiRE question
+```
+
+_See code: [src/commands/api/question/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/question/show.ts)_
 
 ## `claire api:team:create`
 
