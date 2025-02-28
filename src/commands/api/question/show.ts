@@ -13,6 +13,7 @@ export default class Question extends Command {
 
 	static flags = {
 		list: Flags.boolean({ description: 'List questions and select to view' }),
+		questionId: Flags.string({ char: "q", description: 'ID of question to display' }),
 		skipResponse: Flags.boolean({ char: "s", description: 'Do not include question response in output' }),
 	};
 
@@ -25,6 +26,11 @@ export default class Question extends Command {
 
 		if (!authToken) {
 			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
+		}
+
+		if (args.questionId && flags.questionId) {
+			this.error("Supplied both flag and argument. Only use one.")
+			return;
 		}
 
 		let response;
@@ -58,18 +64,18 @@ export default class Question extends Command {
 				]);
 			}
 
-			response = await axios.get(`${apiUrl}/questions/${args.questionId || selectedquestion.id}`, {
+			response = await axios.get(`${apiUrl}/questions/${selectedquestion?.id || flags.questionId || args.questionId}`, {
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 
-			this.log(chalk.whiteBright(`\n${"*".repeat(30)} Question (${response.data?.question?.id}): ${"*".repeat(30)}`))
+			this.log(chalk.whiteBright(`\n${"*".repeat(30)} BEGIN Question (${response.data?.question?.id}): ${"*".repeat(30)}`))
 			this.log(chalk.cyan(response.data?.question?.content));
-			this.log(chalk.whiteBright(`${"*".repeat(80)}\n`));
+			this.log(chalk.whiteBright(`\n${"*".repeat(35)} END Question ${"*".repeat(35)}\n`))
 
 			if (!flags.skipResponse || response.data?.response?.data === null) {
-				this.log(chalk.whiteBright(`${"*".repeat(30)} Response (${response.data?.response?.id}): ${"*".repeat(30)}`))
+				this.log(chalk.whiteBright(`${"*".repeat(30)} BEGIN Response (${response.data?.response?.id}): ${"*".repeat(30)}`))
 				this.log(chalk.cyan(response.data?.response?.content));
-				this.log(chalk.whiteBright(`${"*".repeat(80)}\n`));
+				this.log(chalk.whiteBright(`${"*".repeat(35)} END Response ${"*".repeat(35)}\n`))
 			}
 		} catch (error: any) {
 		    if (axios.isAxiosError(error)) {

@@ -1,17 +1,24 @@
-import { Command, Flags } from '@oclif/core';
+import { Command, Flags, Args } from '@oclif/core';
 import axios from 'axios';
 import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
+import chalk from "chalk";
 
 export default class Project extends Command {
 	static description = 'Show information for CLaiRE project';
 
+	static args = {
+		projectId: Args.string({ description: "ID of project to display" }),
+	};
+
 	static flags = {
-		project: Flags.string({ char: "p", description: 'Show a specific project' }),
+		list: Flags.boolean({ description: 'List projects and select to view' }),
+		projectId: Flags.string({ char: 'p', description: 'ID of project to display' }),
 	};
 
 	async run() {
 		const { flags } = await this.parse(Project);
+	    const { args } = await this.parse(Project);
 		const config = loadConfig();
 		const authToken = config.authToken;
 		const apiUrl = config.apiUrl;
@@ -20,10 +27,58 @@ export default class Project extends Command {
 			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
-		const response = await axios.get(`${apiUrl}/projects/${flags.project}`, {
-			headers: { Authorization: `Bearer ${authToken}` }
-		});
-		this.log(JSON.stringify(response.data, null, 2));
+		if (args.projectId && flags.projectId) {
+			this.error("Supplied both flag and argument. Only use one.")
+			return;
+		}
+
+		let response;
+		let selectedproject;
+
+		try {
+			if (flags.list) {
+				response = await axios.get(`${apiUrl}/projects`, {
+					headers: { Authorization: `Bearer ${authToken}` }
+				})
+
+				const projects = response.data?.reverse();
+
+				if (!projects || projects.length === 0) {
+					this.log("No projects found.");
+					return;
+				}
+
+				// Prompt the user to select a project
+				selectedproject = await inquirer.prompt([
+					{
+						type: 'list',
+						name: 'id',
+						message: 'Select a project:',
+						choices: projects.map((project: { id: string; name: string }) => ({
+							name: project.name.substring(0, 80),
+							value: project.id
+						})),
+						pageSize: 10
+					}
+				]);
+			}
+
+			response = await axios.get(`${apiUrl}/projects/${selectedproject?.id || flags.projectId || args.projectId}`, {
+				headers: { Authorization: `Bearer ${authToken}` }
+			});
+
+			this.log(chalk.whiteBright(`\n${"*".repeat(30)} Project (${response.data?.project?.name}): ${"*".repeat(30)}`))
+			this.log(chalk.cyan(JSON.stringify(response.data?.project, null, 2)));
+			this.log(chalk.whiteBright(`${"*".repeat(80)}\n`));
+
+		} catch (error: any) {
+		    if (axios.isAxiosError(error)) {
+		      console.error(chalk.red(`❌ API request failed: ${error.response?.status} - ${error.response?.statusText}`));
+		    } else {
+		      console.error(chalk.red(`❌ Unexpected error occurred: ${error}`));
+		    }
+		}
+
 		return;
 	}
 }

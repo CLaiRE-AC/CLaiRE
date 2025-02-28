@@ -36,7 +36,7 @@ USAGE
 * [`claire api:project:create`](#claire-apiprojectcreate)
 * [`claire api:project:list`](#claire-apiprojectlist)
 * [`claire api:project:set`](#claire-apiprojectset)
-* [`claire api:project:show`](#claire-apiprojectshow)
+* [`claire api:project:show [PROJECTID]`](#claire-apiprojectshow-projectid)
 * [`claire api:question:show [QUESTIONID]`](#claire-apiquestionshow-questionid)
 * [`claire api:team:create`](#claire-apiteamcreate)
 * [`claire api:team:list`](#claire-apiteamlist)
@@ -181,16 +181,20 @@ DESCRIPTION
 
 _See code: [src/commands/api/project/set.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/set.ts)_
 
-## `claire api:project:show`
+## `claire api:project:show [PROJECTID]`
 
 Show information for CLaiRE project
 
 ```
 USAGE
-  $ claire api:project:show [-p <value>]
+  $ claire api:project:show [PROJECTID] [--list] [-p <value>]
+
+ARGUMENTS
+  PROJECTID  ID of project to display
 
 FLAGS
-  -p, --project=<value>  Show a specific project
+  -p, --projectId=<value>  ID of project to display
+      --list               List projects and select to view
 
 DESCRIPTION
   Show information for CLaiRE project
@@ -204,14 +208,15 @@ Show details for CLaiRE question
 
 ```
 USAGE
-  $ claire api:question:show [QUESTIONID] [--list] [-s]
+  $ claire api:question:show [QUESTIONID] [--list] [-q <value>] [-s]
 
 ARGUMENTS
   QUESTIONID  ID of question to display
 
 FLAGS
-  -s, --skipResponse  Do not include question response in output
-      --list          List questions and select to view
+  -q, --questionId=<value>  ID of question to display
+  -s, --skipResponse        Do not include question response in output
+      --list                List questions and select to view
 
 DESCRIPTION
   Show details for CLaiRE question
