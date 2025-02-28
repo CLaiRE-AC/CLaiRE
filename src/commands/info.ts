@@ -9,8 +9,9 @@ export default class Info extends Command {
 
   async run() {
     const claireDir = path.join(os.homedir(), ".claire");
-    const claireLogsDir = path.join(os.homedir(), ".claire", "logs");
+    const logsDir = path.join(os.homedir(), ".claire", "logs");
     const projectsDir = path.join(claireDir, "projects");
+
     const projectFilePath = path.join(claireDir, "project.json");
     const configFilePath = path.join(claireDir, "config.json");
     const executablePath = process.execPath;
@@ -19,8 +20,8 @@ export default class Info extends Command {
 
     // Display the directory storing configuration files
     this.log(chalk.cyan(`\n📂 Config Directory: ${claireDir}`));
+    this.log(chalk.cyan(`\n📂 Logs Directory: ${logsDir}`));
     this.log(chalk.cyan(`\n📂 Projects Directory: ${projectsDir}`));
-    this.log(chalk.cyan(`\n📂 Conversation Logs Directory: ${claireLogsDir}`));
 
     // List the folders in projectsDir
     if (fs.existsSync(projectsDir)) {

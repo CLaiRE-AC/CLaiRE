@@ -4,7 +4,7 @@ import inquirer from "inquirer";
 import cliSpinners from "cli-spinners"; // Animated status indicator
 import ora from "ora"; // Loading spinner
 import { loadConfig } from "../utils/config.js";
-import { loadConversation, saveConversation, saveQuestion } from "../utils/conversation.js";
+import { saveQuestion } from "../utils/conversation.js";
 
 export default class Ask extends Command {
   static description = "Send a prompt to Claire API and retrieve a response.";
@@ -12,9 +12,7 @@ export default class Ask extends Command {
   static flags = {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
     inputFile: Flags.string({ char: "F", description: "Path to file(s) containing the question input", multiple: true }),
-    model: Flags.string({ char: "m", description: "Claire API model selection", default: "default-model" }),
-    nocontext: Flags.boolean({ description: "Bypass reading project conversation history" }),
-    interactive: Flags.boolean({ char: "i", description: "Interactively select previous questions for context" })
+    model: Flags.string({ char: "m", description: "Claire API model selection", default: "default-model" })
   };
 
   async run() {
@@ -28,13 +26,10 @@ export default class Ask extends Command {
     }
 
     // Ensure user provides a prompt or input file
-    let question = await this.getInitialQuestion(flags);
-    let messages = flags.nocontext ? [] : loadConversation();
+    const content = await this.getInitialQuestion(flags);
 
-    messages.push({ role: "user", content: question });
-
-    // **1️⃣ Send Question to Claire API**
-    const questionId = await this.submitQuestion(apiHost, authToken, question);
+    // **1️⃣ Submit Question to Claire API**
+    const questionId = await this.submitQuestion(apiHost, authToken, content);
     if (!questionId) {
       this.error("Failed to submit question to Claire API.");
     }
@@ -42,12 +37,29 @@ export default class Ask extends Command {
     // **2️⃣ Fetch API Response with Polling**
     const response = await this.pollForResponse(apiHost, authToken, questionId);
 
+    // saveQuestion(content, response);
+
     // **3️⃣ Display Response**
     this.log("\n💡 Claire API Response:");
     this.log(response);
+  }
 
-    // Save the conversation for history
-    saveQuestion(question, response);
+  /**
+   * 🎯 Submit the question to Claire API
+   */
+  private async submitQuestion(apiHost: string, authToken: string, content: string): Promise<number | null> {
+    try {
+      const response = await axios.post(
+        `${apiHost}/questions`,
+        { question: content },
+        { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
+      );
+
+      return response.data?.id || null;
+    } catch (error) {
+      this.error(`❌ Error submitting question: ${(error as AxiosError).message}`);
+      return null;
+    }
   }
 
   /**
@@ -55,7 +67,7 @@ export default class Ask extends Command {
    */
   private async pollForResponse(apiHost: string, authToken: string, questionId: number): Promise<string> {
     const spinner = ora({ text: "🔄 Waiting for response from Claire API...", spinner: cliSpinners.dots }).start();
-    const maxRetries = 10;
+    const maxRetries = 50;
     let attempt = 0;
 
     while (attempt < maxRetries) {
@@ -83,24 +95,6 @@ export default class Ask extends Command {
 
     spinner.fail("❌ Timed out waiting for Claire API response.");
     throw new Error("No response received from Claire API after multiple attempts.");
-  }
-
-  /**
-   * 🎯 Submit User Question to Claire API
-   */
-  private async submitQuestion(apiHost: string, authToken: string, question: string): Promise<number | null> {
-    try {
-      const response = await axios.post(
-        `${apiHost}/questions`,
-        { question: { content: question } },
-        { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
-      );
-
-      return response.data?.id || null;
-    } catch (error) {
-      this.error(`❌ Error submitting question: ${(error as AxiosError).message}`);
-      return null;
-    }
   }
 
   /**
