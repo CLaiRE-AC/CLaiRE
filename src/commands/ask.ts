@@ -20,6 +20,7 @@ export default class Ask extends Command {
     const config = loadConfig();
     const authToken = config.authToken;
     const apiHost = config.apiUrl;
+    const projectId = config.projectId;
 
     if (!authToken) {
       this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
@@ -29,7 +30,7 @@ export default class Ask extends Command {
     const content = await this.getInitialQuestion(flags);
 
     // **1️⃣ Submit Question to Claire API**
-    const questionId = await this.submitQuestion(apiHost, authToken, content);
+    const questionId = await this.submitQuestion(apiHost, authToken, projectId, content);
     if (!questionId) {
       this.error("Failed to submit question to Claire API.");
     }
@@ -47,11 +48,11 @@ export default class Ask extends Command {
   /**
    * 🎯 Submit the question to Claire API
    */
-  private async submitQuestion(apiHost: string, authToken: string, content: string): Promise<number | null> {
+  private async submitQuestion(apiHost: string, authToken: string, projectId: number, content: string): Promise<number | null> {
     try {
       const response = await axios.post(
         `${apiHost}/questions`,
-        { question: { content } },
+        { question: { project_id: projectId, content } },
         { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
       );
 

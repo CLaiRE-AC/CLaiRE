@@ -35,6 +35,7 @@ USAGE
 * [`claire api:invitation:list`](#claire-apiinvitationlist)
 * [`claire api:project:create`](#claire-apiprojectcreate)
 * [`claire api:project:list`](#claire-apiprojectlist)
+* [`claire api:project:set`](#claire-apiprojectset)
 * [`claire api:project:show`](#claire-apiprojectshow)
 * [`claire api:team:create`](#claire-apiteamcreate)
 * [`claire api:team:list`](#claire-apiteamlist)
@@ -165,6 +166,20 @@ DESCRIPTION
 
 _See code: [src/commands/api/project/list.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/list.ts)_
 
+## `claire api:project:set`
+
+List users projects and set active project in CLaiRE config.
+
+```
+USAGE
+  $ claire api:project:set
+
+DESCRIPTION
+  List users projects and set active project in CLaiRE config.
+```
+
+_See code: [src/commands/api/project/set.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/set.ts)_
+
 ## `claire api:project:show`
 
 Show information for CLaiRE project
@@ -238,14 +253,12 @@ Send a prompt to Claire API and retrieve a response.
 
 ```
 USAGE
-  $ claire ask [-p <value>] [-F <value>...] [-m <value>] [--nocontext] [-i]
+  $ claire ask [-p <value>] [-F <value>...] [-m <value>]
 
 FLAGS
   -F, --inputFile=<value>...  Path to file(s) containing the question input
-  -i, --interactive           Interactively select previous questions for context
   -m, --model=<value>         [default: default-model] Claire API model selection
   -p, --prompt=<value>        Prompt to send
-      --nocontext             Bypass reading project conversation history
 
 DESCRIPTION
   Send a prompt to Claire API and retrieve a response.
@@ -255,19 +268,20 @@ _See code: [src/commands/ask.ts](https://github.com/netuoso/claire/claire/blob/v
 
 ## `claire config`
 
-Configure API settings such as API key, email, and API URL.
+Configure API settings such as API key, email, API URL, and selected project.
 
 ```
 USAGE
-  $ claire config [-k <value>] [-e <value>] [-u <value>]
+  $ claire config [-k <value>] [-e <value>] [-u <value>] [-p <value>]
 
 FLAGS
   -e, --email=<value>      Set user email
   -k, --authToken=<value>  Set CLaiRE API key
+  -p, --projectId=<value>  Set selected project ID
   -u, --apiUrl=<value>     Set API base URL
 
 DESCRIPTION
-  Configure API settings such as API key, email, and API URL.
+  Configure API settings such as API key, email, API URL, and selected project.
 ```
 
 _See code: [src/commands/config.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/config.ts)_
