@@ -12,6 +12,9 @@ export default class Set extends Command {
 	};
 
 	async run() {
+		this.log("Deprecated method dont use")
+		return
+
 		const { flags } = await this.parse(Set);
 		const config = loadConfig();
 		const authToken = config.authToken;

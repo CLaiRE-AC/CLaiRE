@@ -20,7 +20,7 @@ export default class Config extends Command {
         email: flags.email || config.email,
         authToken: flags.authToken || config.authToken,
         apiUrl: flags.apiUrl || config.apiUrl,
-        project_id: flags.projectId || config.project_id,
+        projectId: flags.projectId || config.projectId,
       });
       this.log("✅ Configuration updated.");
     } else {

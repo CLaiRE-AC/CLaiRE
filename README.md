@@ -34,7 +34,6 @@ USAGE
 * [`claire api:invitation:create`](#claire-apiinvitationcreate)
 * [`claire api:invitation:list`](#claire-apiinvitationlist)
 * [`claire api:project:create`](#claire-apiprojectcreate)
-* [`claire api:project:list`](#claire-apiprojectlist)
 * [`claire api:project:set`](#claire-apiprojectset)
 * [`claire api:project:show [PROJECTID]`](#claire-apiprojectshow-projectid)
 * [`claire api:question:show [QUESTIONID]`](#claire-apiquestionshow-questionid)
@@ -102,12 +101,10 @@ Manage invitations (list, show, create)
 
 ```
 USAGE
-  $ claire api:invitation:create [--email <value>] [--team_id <value>] [--project_id <value>]
+  $ claire api:invitation:create [--email <value>]
 
 FLAGS
-  --email=<value>       Email of the invitee
-  --project_id=<value>  Project ID
-  --team_id=<value>     Team ID
+  --email=<value>  Email of the invitee
 
 DESCRIPTION
   Manage invitations (list, show, create)
@@ -152,20 +149,6 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/api/project/create.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/create.ts)_
-
-## `claire api:project:list`
-
-List all projects from CLaiRE API
-
-```
-USAGE
-  $ claire api:project:list
-
-DESCRIPTION
-  List all projects from CLaiRE API
-```
-
-_See code: [src/commands/api/project/list.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/list.ts)_
 
 ## `claire api:project:set`
 
