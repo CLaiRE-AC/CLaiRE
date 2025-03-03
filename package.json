@@ -66,12 +66,6 @@
       "api": {
         "description": "Commands for interacting with CLaiRE API"
       },
-      "db": {
-        "description": "Commands for interacting and administering the Sqlite3 database"
-      },
-      "git": {
-        "description": "Commands for interacting and administering the Git repository"
-      },
       "project": {
         "description": "Project based commands for Claire"
       }
