@@ -12,12 +12,11 @@ export default class Init extends Command {
     const claireDir = path.join(os.homedir(), ".claire");
     const projectsDir = path.join(claireDir, "projects");
     const projectDir = path.join(projectsDir, "default");
-    const projectFilePath = path.join(claireDir, "project.json");
 
     // Ensure ~/.claire directory exists
     if (!fs.existsSync(claireDir)) {
       fs.mkdirSync(claireDir, { recursive: true });
-      this.log(chalk.green(`✅ Created 'projects' directory at ${claireDir}`));
+      this.log(chalk.green(`✅ Created 'CLaiRE' directory at ${claireDir}`));
     }
 
     // Ensure ~/.claire/projects directory exists

@@ -20,10 +20,14 @@ export default class Ask extends Command {
     const config = loadConfig();
     const authToken = config.authToken;
     const apiHost = config.apiUrl;
-    const projectId = config.projectId;
+    const projectId = config.project.id;
 
     if (!authToken) {
-      this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
+      this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
+    }
+
+    if (!projectId) {
+      this.error("CLaiRE Project Not Set. Set it using `claire api:project:set`.");
     }
 
     // Ensure user provides a prompt or input file

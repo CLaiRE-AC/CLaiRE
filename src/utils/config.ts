@@ -7,6 +7,11 @@ const CONFIG_FILE = path.join(os.homedir(), ".claire", "config.json");
 export type ConfigData = {
   email?: string;
   authToken?: string;
+  apiUrl?: string;
+  project?: {
+    id?: string;
+    name?: string;
+  };
 };
 
 /**

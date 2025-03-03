@@ -35,16 +35,16 @@ export default class Project extends Command {
 					message: 'Select a project:',
 					choices: projects.map((project: { id: string; name: string }) => ({
 						name: project.name,
-						value: project.id
+						value: {id: project.id, name: project.name}
 					})),
 					pageSize: 10
 				}
 			]);
 
 			// Save the selected project ID to the config
-			saveConfig({ ...config, projectId: selectedProject });
+			saveConfig({ ...config, project: selectedProject });
 
-			this.log(`✅ Project selected and saved (ID: ${selectedProject}).`);
+			this.log(`✅ Project selected and saved (ID: ${selectedProject.id}).`);
 		} catch (error: any) {
 			this.error(`Error fetching projects: ${error.message}`);
 		}
