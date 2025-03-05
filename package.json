@@ -64,9 +64,6 @@
     "topics": {
       "api": {
         "description": "Commands for interacting with CLaiRE API"
-      },
-      "project": {
-        "description": "Project based commands for CLaiRE"
       }
     }
   },
