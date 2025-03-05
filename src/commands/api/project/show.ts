@@ -17,14 +17,11 @@ export default class Project extends Command {
 	};
 
 	async run() {
-		const { flags } = await this.parse(Project);
-	    const { args } = await this.parse(Project);
-		const config = loadConfig();
-		const authToken = config.authToken;
-		const apiUrl = config.apiUrl;
+		const { args, flags } = await this.parse(Project);
+		const { token: authToken, host: apiHost } = loadConfig().api;
 
 		if (!authToken) {
-			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
+			this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
 		if (args.projectId && flags.projectId) {
@@ -37,7 +34,7 @@ export default class Project extends Command {
 
 		try {
 			if (flags.list) {
-				response = await axios.get(`${apiUrl}/projects`, {
+				response = await axios.get(`${apiHost}/api/projects`, {
 					headers: { Authorization: `Bearer ${authToken}` }
 				})
 
@@ -63,7 +60,7 @@ export default class Project extends Command {
 				]);
 			}
 
-			response = await axios.get(`${apiUrl}/projects/${selectedproject?.id || flags.projectId || args.projectId}`, {
+			response = await axios.get(`${apiHost}/api/projects/${selectedproject?.id || flags.projectId || args.projectId}`, {
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 

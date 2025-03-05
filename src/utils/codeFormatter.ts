@@ -17,6 +17,6 @@ export function formatCodeBlocks(text: string): string {
       ignoreIllegals: true,
     });
 
-    return `\n${chalk.green(`─────── CODE BLOCK [${lang.toUpperCase()}] ───────`)}\n${highlightedCode}\n${chalk.green("──────────────────────────────────────")}\n`;
+    return `\n${chalk.whiteBright(`${'*'.repeat(10)} [${lang.toUpperCase()}] ${'*'.repeat(10)}`)}\n\n${highlightedCode}\n${chalk.whiteBright(`${'*'.repeat(35)}`)}\n`;
   });
 }

@@ -2,6 +2,7 @@ import { Command, Flags, Args } from '@oclif/core';
 import axios, { AxiosError } from "axios";
 import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
+import { formatCodeBlocks } from "../../../utils/codeFormatter.js";
 import chalk from "chalk";
 
 export default class Question extends Command {
@@ -18,19 +19,15 @@ export default class Question extends Command {
 	};
 
 	async run() {
-		const { flags } = await this.parse(Question);
-	    const { args } = await this.parse(Question);
-		const config = loadConfig();
-		const authToken = config.authToken;
-		const apiUrl = config.apiUrl;
+		const { args, flags } = await this.parse(Question);
+		const { token: authToken, host: apiHost } = loadConfig().api;
 
 		if (!authToken) {
-			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
+			this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
 		if (args.questionId && flags.questionId) {
 			this.error("Supplied both flag and argument. Only use one.")
-			return;
 		}
 
 		let response;
@@ -38,7 +35,7 @@ export default class Question extends Command {
 
 		try {
 			if (flags.list) {
-				response = await axios.get(`${apiUrl}/questions`, {
+				response = await axios.get(`${apiHost}/api/questions`, {
 					headers: { Authorization: `Bearer ${authToken}` }
 				})
 
@@ -54,9 +51,9 @@ export default class Question extends Command {
 					{
 						type: 'list',
 						name: 'id',
-						message: 'Select a project:',
+						message: 'Select a question:',
 						choices: questions.map((question: { id: string; content: string }) => ({
-							name: question.content.substring(0, 80),
+							name: `[${question.id}] ${question.content.substring(0, 80)}`,
 							value: question.id
 						})),
 						pageSize: 10
@@ -64,18 +61,18 @@ export default class Question extends Command {
 				]);
 			}
 
-			response = await axios.get(`${apiUrl}/questions/${selectedquestion?.id || flags.questionId || args.questionId}`, {
+			response = await axios.get(`${apiHost}/api/questions/${selectedquestion?.id || flags.questionId || args.questionId}`, {
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 
-			this.log(chalk.whiteBright(`\n${"*".repeat(30)} BEGIN Question (${response.data?.question?.id}): ${"*".repeat(30)}`))
-			this.log(chalk.cyan(response.data?.question?.content));
-			this.log(chalk.whiteBright(`\n${"*".repeat(35)} END Question ${"*".repeat(35)}\n`))
+			this.log(chalk.whiteBright(`\n${"\\".repeat(30)} BEGIN Question (${response.data?.question?.id}): ${"/".repeat(30)}\n`))
+			this.log(chalk.cyan(formatCodeBlocks(response.data?.question?.content)));
+			this.log(chalk.whiteBright(`\n${"\\".repeat(35)} END Question ${"/".repeat(35)}\n`))
 
 			if (!flags.skipResponse || response.data?.response?.data === null) {
-				this.log(chalk.whiteBright(`${"*".repeat(30)} BEGIN Response (${response.data?.response?.id}): ${"*".repeat(30)}`))
-				this.log(chalk.cyan(response.data?.response?.content));
-				this.log(chalk.whiteBright(`${"*".repeat(35)} END Response ${"*".repeat(35)}\n`))
+				this.log(chalk.whiteBright(`\n\n${"\\".repeat(30)} BEGIN Response (${response.data?.response?.id}): ${"/".repeat(30)}\n`))
+				this.log(chalk.cyan(formatCodeBlocks(response.data?.response?.content)));
+				this.log(chalk.whiteBright(`\n${"\\".repeat(35)} END Response ${"/".repeat(35)}\n`))
 			}
 		} catch (error: any) {
 		    if (axios.isAxiosError(error)) {

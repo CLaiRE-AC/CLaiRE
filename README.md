@@ -16,11 +16,11 @@ Command Line AI Request Experience
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g claire
+$ npm install -g CLaiRE
 $ claire COMMAND
 running command...
 $ claire (--version)
-claire/0.0.0 darwin-arm64 node-v23.3.0
+CLaiRE/0.0.1 darwin-arm64 node-v22.14.0
 $ claire --help [COMMAND]
 USAGE
   $ claire COMMAND
@@ -29,17 +29,12 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`claire api:config:get`](#claire-apiconfigget)
-* [`claire api:config:set`](#claire-apiconfigset)
-* [`claire api:invitation:create`](#claire-apiinvitationcreate)
+* [`claire api:invitation:create [EMAIL]`](#claire-apiinvitationcreate-email)
 * [`claire api:invitation:list`](#claire-apiinvitationlist)
 * [`claire api:project:create`](#claire-apiprojectcreate)
 * [`claire api:project:set`](#claire-apiprojectset)
 * [`claire api:project:show [PROJECTID]`](#claire-apiprojectshow-projectid)
 * [`claire api:question:show [QUESTIONID]`](#claire-apiquestionshow-questionid)
-* [`claire api:team:create`](#claire-apiteamcreate)
-* [`claire api:team:list`](#claire-apiteamlist)
-* [`claire api:team:show`](#claire-apiteamshow)
 * [`claire ask`](#claire-ask)
 * [`claire config`](#claire-config)
 * [`claire help [COMMAND]`](#claire-help-command)
@@ -55,75 +50,38 @@ USAGE
 * [`claire plugins:uninstall [PLUGIN]`](#claire-pluginsuninstall-plugin)
 * [`claire plugins:unlink [PLUGIN]`](#claire-pluginsunlink-plugin)
 * [`claire plugins:update`](#claire-pluginsupdate)
-* [`claire project:set PROJECTNAME`](#claire-projectset-projectname)
-* [`claire view`](#claire-view)
+* [`claire subscribe [FILE]`](#claire-subscribe-file)
 
-## `claire api:config:get`
+## `claire api:invitation:create [EMAIL]`
 
-Manage teams (list, show, create)
-
-```
-USAGE
-  $ claire api:config:get
-
-DESCRIPTION
-  Manage teams (list, show, create)
-```
-
-_See code: [src/commands/api/config/get.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/config/get.ts)_
-
-## `claire api:config:set`
-
-Manage teams (list, show, create)
+Send CLaiRE invitation to a new user.
 
 ```
 USAGE
-  $ claire api:config:set [-t <value>] [-p <value>]
+  $ claire api:invitation:create [EMAIL]
 
-FLAGS
-  -p, --project_id=<value>  Set project to use with CLaiRE API
-  -t, --team_id=<value>     Set team to use with CLaiRE API
-
-DESCRIPTION
-  Manage teams (list, show, create)
-```
-
-_See code: [src/commands/api/config/set.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/config/set.ts)_
-
-## `claire api:invitation:create`
-
-Manage invitations (list, show, create)
-
-```
-USAGE
-  $ claire api:invitation:create [--email <value>]
-
-FLAGS
-  --email=<value>  Email of the invitee
+ARGUMENTS
+  EMAIL  Email of the user to invite to CLaiRE
 
 DESCRIPTION
-  Manage invitations (list, show, create)
+  Send CLaiRE invitation to a new user.
 ```
 
-_See code: [src/commands/api/invitation/create.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/invitation/create.ts)_
+_See code: [src/commands/api/invitation/create.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/api/invitation/create.ts)_
 
 ## `claire api:invitation:list`
 
-Manage invitations (list, show, create)
+Show sent CLaiRE invitations.
 
 ```
 USAGE
-  $ claire api:invitation:list [-t <value>] [-p <value>]
-
-FLAGS
-  -p, --project_id=<value>  Project ID
-  -t, --team_id=<value>     Team ID
+  $ claire api:invitation:list
 
 DESCRIPTION
-  Manage invitations (list, show, create)
+  Show sent CLaiRE invitations.
 ```
 
-_See code: [src/commands/api/invitation/list.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/invitation/list.ts)_
+_See code: [src/commands/api/invitation/list.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/api/invitation/list.ts)_
 
 ## `claire api:project:create`
 
@@ -131,19 +89,17 @@ Create new project in CLaiRE API
 
 ```
 USAGE
-  $ claire api:project:create [--name <value>] [--description <value>] [--token_allowance <value>] [--team_id <value>]
+  $ claire api:project:create [--name <value>] [--description <value>]
 
 FLAGS
-  --description=<value>      Project description
-  --name=<value>             Project name
-  --team_id=<value>          Team ID
-  --token_allowance=<value>  Token spend limit (default 100000)
+  --description=<value>  Project description
+  --name=<value>         Project name
 
 DESCRIPTION
   Create new project in CLaiRE API
 ```
 
-_See code: [src/commands/api/project/create.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/create.ts)_
+_See code: [src/commands/api/project/create.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/api/project/create.ts)_
 
 ## `claire api:project:set`
 
@@ -157,7 +113,7 @@ DESCRIPTION
   List users projects and set active project in CLaiRE config.
 ```
 
-_See code: [src/commands/api/project/set.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/set.ts)_
+_See code: [src/commands/api/project/set.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/api/project/set.ts)_
 
 ## `claire api:project:show [PROJECTID]`
 
@@ -178,7 +134,7 @@ DESCRIPTION
   Show information for CLaiRE project
 ```
 
-_See code: [src/commands/api/project/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/project/show.ts)_
+_See code: [src/commands/api/project/show.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/api/project/show.ts)_
 
 ## `claire api:question:show [QUESTIONID]`
 
@@ -200,97 +156,52 @@ DESCRIPTION
   Show details for CLaiRE question
 ```
 
-_See code: [src/commands/api/question/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/question/show.ts)_
-
-## `claire api:team:create`
-
-Manage teams (list, show, create)
-
-```
-USAGE
-  $ claire api:team:create [--name <value>] [--description <value>] [--token_allowance <value>]
-
-FLAGS
-  --description=<value>      Team description
-  --name=<value>             Team name
-  --token_allowance=<value>  Token spend limit (default 100000)
-
-DESCRIPTION
-  Manage teams (list, show, create)
-```
-
-_See code: [src/commands/api/team/create.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team/create.ts)_
-
-## `claire api:team:list`
-
-Manage teams (list, show, create)
-
-```
-USAGE
-  $ claire api:team:list
-
-DESCRIPTION
-  Manage teams (list, show, create)
-```
-
-_See code: [src/commands/api/team/list.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team/list.ts)_
-
-## `claire api:team:show`
-
-Manage teams (list, show, create)
-
-```
-USAGE
-  $ claire api:team:show [-t <value>]
-
-FLAGS
-  -t, --team=<value>  Show a specific team
-
-DESCRIPTION
-  Manage teams (list, show, create)
-```
-
-_See code: [src/commands/api/team/show.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/api/team/show.ts)_
+_See code: [src/commands/api/question/show.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/api/question/show.ts)_
 
 ## `claire ask`
 
-Send a prompt to Claire API and retrieve a response.
+Send a prompt to CLaiRE API and retrieve a response.
 
 ```
 USAGE
-  $ claire ask [-p <value>] [-F <value>...] [-m <value>]
+  $ claire ask [-p <value>] [-F <value>...]
 
 FLAGS
   -F, --inputFile=<value>...  Path to file(s) containing the question input
-  -m, --model=<value>         [default: default-model] Claire API model selection
   -p, --prompt=<value>        Prompt to send
 
 DESCRIPTION
-  Send a prompt to Claire API and retrieve a response.
+  Send a prompt to CLaiRE API and retrieve a response.
+
+EXAMPLES
+  $ claire ask -p "How do I add ActiveAdmin to a Rails 7 app?
+
+  $ claire ask -p "Refactor this file" -F path/to/src/file.ts
+
+  $ claire ask -F path/to/input.txt
+
+  $ claire ask -p "Help me combine these files:" -F path/to/file1.ts -F path/to/file2.ts
 ```
 
-_See code: [src/commands/ask.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/ask.ts)_
+_See code: [src/commands/ask.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/ask.ts)_
 
 ## `claire config`
 
-Configure API settings such as API key, email, API URL, and selected project.
+View current or set new CLaiRE configuration values.
 
 ```
 USAGE
-  $ claire config [-k <value>] [-e <value>] [-u <value>] [-p <value>] [-n <value>]
+  $ claire config [-h <value>] [-t <value>]
 
 FLAGS
-  -e, --email=<value>        Set user email
-  -k, --authToken=<value>    Set CLaiRE API key
-  -n, --projectName=<value>  Set selected project name
-  -p, --projectId=<value>    Set selected project ID
-  -u, --apiUrl=<value>       Set API base URL
+  -h, --host=<value>   Set API base URL
+  -t, --token=<value>  Set CLaiRE API key
 
 DESCRIPTION
-  Configure API settings such as API key, email, API URL, and selected project.
+  View current or set new CLaiRE configuration values.
 ```
 
-_See code: [src/commands/config.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/config.ts)_
+_See code: [src/commands/config.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/config.ts)_
 
 ## `claire help [COMMAND]`
 
@@ -324,7 +235,7 @@ DESCRIPTION
   Display current project and configuration information.
 ```
 
-_See code: [src/commands/info.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/info.ts)_
+_See code: [src/commands/info.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/info.ts)_
 
 ## `claire init`
 
@@ -338,7 +249,7 @@ DESCRIPTION
   Initialize CLaiRE CLI.
 ```
 
-_See code: [src/commands/init.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/init.ts)_
 
 ## `claire plugins`
 
@@ -630,37 +541,27 @@ DESCRIPTION
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/update.ts)_
 
-## `claire project:set PROJECTNAME`
+## `claire subscribe [FILE]`
 
-Set the current project for Claire.
+describe the command here
 
 ```
 USAGE
-  $ claire project:set PROJECTNAME
+  $ claire subscribe [FILE] [-f] [-n <value>]
 
 ARGUMENTS
-  PROJECTNAME  Project name
-
-DESCRIPTION
-  Set the current project for Claire.
-```
-
-_See code: [src/commands/project/set.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/project/set.ts)_
-
-## `claire view`
-
-View saved questions interactively and display responses.
-
-```
-USAGE
-  $ claire view [-s <value>]
+  FILE  file to read
 
 FLAGS
-  -s, --search=<value>  Search for a question containing this keyword
+  -f, --force
+  -n, --name=<value>  name to print
 
 DESCRIPTION
-  View saved questions interactively and display responses.
+  describe the command here
+
+EXAMPLES
+  $ claire subscribe
 ```
 
-_See code: [src/commands/view.ts](https://github.com/netuoso/claire/claire/blob/v0.0.0/src/commands/view.ts)_
+_See code: [src/commands/subscribe.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/subscribe.ts)_
 <!-- commandsstop -->

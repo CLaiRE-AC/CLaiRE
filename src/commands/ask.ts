@@ -1,26 +1,30 @@
 import { Command, Flags } from "@oclif/core";
 import axios, { AxiosError } from "axios";
 import inquirer from "inquirer";
-import cliSpinners from "cli-spinners"; // Animated status indicator
-import ora from "ora"; // Loading spinner
+import cliSpinners from "cli-spinners"; // Animated status indicator: Maybe remove for cli-ux
+import ora from "ora"; // Loading spinner: Maybe remove for cli-ux
 import { loadConfig } from "../utils/config.js";
-import { saveQuestion } from "../utils/conversation.js";
+import { formatCodeBlocks } from "../utils/codeFormatter.js";
 
 export default class Ask extends Command {
-  static description = "Send a prompt to Claire API and retrieve a response.";
+  static description = "Send a prompt to CLaiRE API and retrieve a response.";
 
   static flags = {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
     inputFile: Flags.string({ char: "F", description: "Path to file(s) containing the question input", multiple: true }),
-    model: Flags.string({ char: "m", description: "Claire API model selection", default: "default-model" })
   };
+
+  static examples = [
+    '<%= config.bin %> <%= command.id %> -p "How do I add ActiveAdmin to a Rails 7 app?',
+    '<%= config.bin %> <%= command.id %> -p "Refactor this file" -F path/to/src/file.ts',
+    '<%= config.bin %> <%= command.id %> -F path/to/input.txt',
+    '<%= config.bin %> <%= command.id %> -p "Help me combine these files:" -F path/to/file1.ts -F path/to/file2.ts',
+  ]
 
   async run() {
     const { flags } = await this.parse(Ask);
-    const config = loadConfig();
-    const authToken = config.authToken;
-    const apiHost = config.apiUrl;
-    const projectId = config.project.id;
+    const { token: authToken, host: apiHost } = loadConfig().api;
+    const { id: projectId } = loadConfig().project;
 
     if (!authToken) {
       this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
@@ -33,36 +37,39 @@ export default class Ask extends Command {
     // Ensure user provides a prompt or input file
     const content = await this.getInitialQuestion(flags);
 
-    // **1️⃣ Submit Question to Claire API**
-    const questionId = await this.submitQuestion(apiHost, authToken, projectId, content);
-    if (!questionId) {
-      this.error("Failed to submit question to Claire API.");
+    // **1️⃣ Submit Question to CLaiRE API**
+    try {
+      const questionId = await this.submitQuestion(apiHost, authToken, projectId, content);
+      if (!questionId) {
+        return; // Error already handled inside `submitQuestion`
+      }
+
+      // **2️⃣ Fetch API Response with Polling**
+      const response = await this.pollForResponse(apiHost, authToken, questionId);
+
+      // **3️⃣ Display Response**
+      this.log("\n💡 CLaiRE API Response:");
+      this.log(formatCodeBlocks(response));
+    } catch (error) {
+      this.error(`${error instanceof Error ? error.message : "Unknown error"}`);
     }
-
-    // **2️⃣ Fetch API Response with Polling**
-    const response = await this.pollForResponse(apiHost, authToken, questionId);
-
-    // saveQuestion(content, response);
-
-    // **3️⃣ Display Response**
-    this.log("\n💡 Claire API Response:");
-    this.log(response);
   }
 
   /**
-   * 🎯 Submit the question to Claire API
+   * 🎯 Submit the question to CLaiRE API
    */
   private async submitQuestion(apiHost: string, authToken: string, projectId: number, content: string): Promise<number | null> {
     try {
       const response = await axios.post(
-        `${apiHost}/questions`,
+        `${apiHost}/api/questions`,
         { question: { project_id: projectId, content } },
         { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
       );
 
       return response.data?.id || null;
     } catch (error) {
-      this.error(`❌ Error submitting question: ${(error as AxiosError).message}`);
+      const errorMessage = this.extractErrorMessage(error);
+      this.error(`❌ ${errorMessage}`);
       return null;
     }
   }
@@ -71,14 +78,14 @@ export default class Ask extends Command {
    * 🎯 Fetch API Response Using Polling Every 3 Seconds
    */
   private async pollForResponse(apiHost: string, authToken: string, questionId: number): Promise<string> {
-    const spinner = ora({ text: "🔄 Waiting for response from Claire API...", spinner: cliSpinners.dots }).start();
+    const spinner = ora({ text: "🔄 Waiting for response from CLaiRE API...", spinner: cliSpinners.dots }).start();
     const maxRetries = 50;
     let attempt = 0;
 
     while (attempt < maxRetries) {
       try {
         await new Promise((resolve) => setTimeout(resolve, 3000)); // Wait 3 seconds
-        const response = await axios.get(`${apiHost}/responses/${questionId}`, {
+        const response = await axios.get(`${apiHost}/api/responses/${questionId}`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
@@ -87,19 +94,31 @@ export default class Ask extends Command {
           return response.data.content;
         }
       } catch (error: any) {
+        const errorMessage = this.extractErrorMessage(error);
+
         if (error.response?.data?.errors?.includes("Response doesn't exist")) {
-          spinner.text = `⏳ Still waiting for Claire API response... [Attempt: ${attempt + 1}/10]`;
+          spinner.text = `⏳ Still waiting for CLaiRE API response... [Attempt: ${attempt + 1}/10]`;
         } else {
-          spinner.fail("❌ Error fetching response.");
-          throw error;
+          spinner.fail(`❌ Error fetching response: ${errorMessage}`);
+          throw new Error(errorMessage);
         }
       }
 
       attempt++;
     }
 
-    spinner.fail("❌ Timed out waiting for Claire API response.");
-    throw new Error("No response received from Claire API after multiple attempts.");
+    spinner.fail("❌ Timed out waiting for CLaiRE API response.");
+    throw new Error("No response received from CLaiRE API after multiple attempts.");
+  }
+
+  /**
+   * 🎯 Extract and return a meaningful error message from API response
+   */
+  private extractErrorMessage(error: unknown): string {
+    if (axios.isAxiosError(error)) {
+      return error.response?.data?.messages || error.response?.data?.error || error.message || "Unknown API error";
+    }
+    return error instanceof Error ? error.message : "An unknown error occurred";
   }
 
   /**

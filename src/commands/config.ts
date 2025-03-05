@@ -3,28 +3,26 @@ import { saveConfig, loadConfig } from "../utils/config.js";
 import chalk from "chalk";
 
 export default class Config extends Command {
-  static description = "Configure API settings such as API key, email, API URL, and selected project.";
+  static description = "View current or set new CLaiRE configuration values.";
 
   static flags = {
-    authToken: Flags.string({ char: "k", description: "Set CLaiRE API key" }),
-    email: Flags.string({ char: "e", description: "Set user email" }),
-    apiUrl: Flags.string({ char: "u", description: "Set API base URL" }),
-    projectId: Flags.string({ char: "p", description: "Set selected project ID" }),
-    projectName: Flags.string({ char: "n", description: "Set selected project name" }),
+    host: Flags.string({ char: "h", description: "Set API base URL" }),
+    token: Flags.string({ char: "t", description: "Set CLaiRE API key" }),
   };
 
   async run() {
     const { flags } = await this.parse(Config);
     const config = loadConfig();
 
-    if (flags.authToken || flags.email || flags.apiUrl || flags.projectId || flags.projectName) {
+    if (flags.host || flags.token) {
       saveConfig({
-        email: flags.email || config.email || "",
-        authToken: flags.authToken || config.authToken || "",
-        apiUrl: flags.apiUrl || config.apiUrl || "",
+        api: {
+          host: flags.host || config.api?.host || "https://claire.ac/api",
+          token: flags.token || config.api?.token || "",
+        },
         project: {
-          id: flags.projectId || config.project?.id || "",
-          name: flags.projectName || config.project?.name || "",
+          id: config.project?.id || "",
+          name: config.project?.name || "",
         },
       });
       this.log("✅ Configuration updated.");

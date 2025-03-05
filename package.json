@@ -1,12 +1,12 @@
 {
-  "name": "claire",
-  "description": "Command Line AI Request Experience",
-  "version": "0.0.0",
+  "name": "CLaiRE",
+  "description": "Command Line AI Request Expect",
+  "version": "0.0.1",
   "author": "Andrew Chaney (netuoso)",
   "bin": {
     "claire": "./bin/run.js"
   },
-  "bugs": "https://github.com/https://github.com/netuoso/claire/claire/issues",
+  "bugs": "https://github.com/netuoso/CLaiRE/issues",
   "dependencies": {
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
@@ -15,7 +15,6 @@
     "better-sqlite3": "^11.8.1",
     "chalk": "^5.4.1",
     "cli-highlight": "^2.1.11",
-    "highlight.js": "^11.11.1",
     "inquirer": "^12.4.1",
     "ora": "^8.2.0",
     "sqlite3": "^5.1.7"
@@ -46,7 +45,7 @@
     "./dist",
     "./oclif.manifest.json"
   ],
-  "homepage": "https://github.com/https://github.com/netuoso/claire/claire",
+  "homepage": "https://github.com/netuoso/CLaiRE",
   "keywords": [
     "oclif"
   ],
@@ -67,11 +66,11 @@
         "description": "Commands for interacting with CLaiRE API"
       },
       "project": {
-        "description": "Project based commands for Claire"
+        "description": "Project based commands for CLaiRE"
       }
     }
   },
-  "repository": "https://github.com/netuoso/claire/claire",
+  "repository": "https://github.com/netuoso/CLaiRE",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "bk": "npm run build && npm link",

@@ -5,9 +5,10 @@ import path from "path";
 const CONFIG_FILE = path.join(os.homedir(), ".claire", "config.json");
 
 export type ConfigData = {
-  email?: string;
-  authToken?: string;
-  apiUrl?: string;
+  api?: {
+    host?: string;
+    token?: string;
+  },
   project?: {
     id?: string;
     name?: string;

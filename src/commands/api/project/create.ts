@@ -13,12 +13,10 @@ export default class Project extends Command {
 
 	async run() {
 		const { flags } = await this.parse(Project);
-		const config = loadConfig();
-		const authToken = config.authToken;
-		const apiUrl = config.apiUrl;
+		const { token: authToken, host: apiHost } = loadConfig().api;
 
 		if (!authToken) {
-			this.error("Missing Claire API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
+			this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
 		const answers = await inquirer.prompt([
@@ -33,7 +31,7 @@ export default class Project extends Command {
 			},
 		};
 
-		const response = await axios.post(`${apiUrl}/projects`, payload, {
+		const response = await axios.post(`${apiHost}/api/projects`, payload, {
 			headers: { Authorization: `Bearer ${authToken}` }
 		});
 		this.log('Project created successfully:', JSON.stringify(response.data, null, 2));

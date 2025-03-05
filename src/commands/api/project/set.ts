@@ -7,16 +7,15 @@ export default class Project extends Command {
 	static description = 'List users projects and set active project in CLaiRE config.';
 
 	async run() {
-		const config = loadConfig();
-		const authToken = config.authToken;
-		const apiUrl = config.apiUrl;
+		let config = loadConfig();
+		const { token: authToken, host: apiHost } = config.api;
 
 		if (!authToken) {
 			this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
 		try {
-			const response = await axios.get(`${apiUrl}/projects`, {
+			const response = await axios.get(`${apiHost}/api/projects`, {
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 

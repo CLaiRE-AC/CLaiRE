@@ -19,18 +19,8 @@ export default class Init extends Command {
       this.log(chalk.green(`✅ Created 'CLaiRE' directory at ${claireDir}`));
     }
 
-    // Ensure ~/.claire/projects directory exists
-    if (!fs.existsSync(projectsDir)) {
-      fs.mkdirSync(projectsDir, { recursive: true });
-      this.log(chalk.green(`✅ Created 'projects' directory at ${projectsDir}`));
-    }
+    this.log("We should walk user thru setting up their account. Maybe open browser for login and subscription.")
 
-    // Create specific project folder (e.g., ~/.claire/projects/my_project)
-    if (!fs.existsSync(projectDir)) {
-      fs.mkdirSync(projectDir, { recursive: true });
-      this.log(chalk.green(`✅ Created project directory: ${projectDir}`));
-    }
-
-    this.log(chalk.blue(`🎯 Claire successfully initialized.`));
+    this.log(chalk.blue(`🎯 CLaiRE successfully initialized.`));
   }
 }
