@@ -16,11 +16,11 @@ Command Line AI Request Experience
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g CLaiRE
+$ npm install -g @claire-ac/cli
 $ claire COMMAND
 running command...
 $ claire (--version)
-CLaiRE/0.0.1 darwin-arm64 node-v22.14.0
+@claire-ac/cli/0.0.1 darwin-arm64 node-v22.14.0
 $ claire --help [COMMAND]
 USAGE
   $ claire COMMAND
@@ -50,7 +50,6 @@ USAGE
 * [`claire plugins:uninstall [PLUGIN]`](#claire-pluginsuninstall-plugin)
 * [`claire plugins:unlink [PLUGIN]`](#claire-pluginsunlink-plugin)
 * [`claire plugins:update`](#claire-pluginsupdate)
-* [`claire subscribe [FILE]`](#claire-subscribe-file)
 
 ## `claire api:invitation:create [EMAIL]`
 
@@ -540,28 +539,4 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.31/src/commands/plugins/update.ts)_
-
-## `claire subscribe [FILE]`
-
-describe the command here
-
-```
-USAGE
-  $ claire subscribe [FILE] [-f] [-n <value>]
-
-ARGUMENTS
-  FILE  file to read
-
-FLAGS
-  -f, --force
-  -n, --name=<value>  name to print
-
-DESCRIPTION
-  describe the command here
-
-EXAMPLES
-  $ claire subscribe
-```
-
-_See code: [src/commands/subscribe.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.1/src/commands/subscribe.ts)_
 <!-- commandsstop -->

@@ -56,6 +56,9 @@
     "bin": "claire",
     "dirname": "claire",
     "commands": "./dist/commands",
+    "macos": {
+      "identifier": "com.claireac.cli"
+    },
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-plugins"
