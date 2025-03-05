@@ -1,5 +1,5 @@
 {
-  "name": "CLaiRE",
+  "name": "@claire-ac/cli",
   "description": "Command Line AI Request Expect",
   "version": "0.0.1",
   "author": "Andrew Chaney (netuoso)",
