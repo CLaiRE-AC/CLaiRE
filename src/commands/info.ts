@@ -19,10 +19,10 @@ export default class Info extends Command {
     try {
       const clairePackageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
       const claireOutput = {
-        name: clairePackageJson.name,
-        description: clairePackageJson.description,
-        version: clairePackageJson.version,
-        author: clairePackageJson.author
+        "name": "@claire-ac/cli",
+        "description": "Command Line AI Request Expect",
+        "version": "0.0.1",
+        "author": "Andrew Chaney (netuoso)"
       }
       this.log(chalk.whiteBright(JSON.stringify(claireOutput, null, 2))); // Pretty print
     } catch (error) {
