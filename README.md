@@ -3,6 +3,8 @@ claire
 
 Command Line AI Request Experience
 
+![CLaiRE Logo](claire-social-logo.png)
+
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/claire.svg)](https://npmjs.org/package/claire)
