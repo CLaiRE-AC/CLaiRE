@@ -1,7 +1,7 @@
 {
   "name": "@claire-ac/cli",
   "description": "Command Line AI Request Expect",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Andrew Chaney (netuoso)",
   "bin": {
     "claire": "./bin/run.js"
