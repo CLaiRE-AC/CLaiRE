@@ -22,7 +22,7 @@ $ npm install -g @claire-ac/cli
 $ claire COMMAND
 running command...
 $ claire (--version)
-@claire-ac/cli/0.0.4 darwin-arm64 node-v22.14.0
+@claire-ac/cli/0.0.5 darwin-arm64 node-v22.14.0
 $ claire --help [COMMAND]
 USAGE
   $ claire COMMAND
@@ -68,7 +68,7 @@ DESCRIPTION
   Send CLaiRE invitation to a new user.
 ```
 
-_See code: [src/commands/api/invitation/create.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/api/invitation/create.ts)_
+_See code: [src/commands/api/invitation/create.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/api/invitation/create.ts)_
 
 ## `claire api:invitation:list`
 
@@ -82,7 +82,7 @@ DESCRIPTION
   Show sent CLaiRE invitations.
 ```
 
-_See code: [src/commands/api/invitation/list.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/api/invitation/list.ts)_
+_See code: [src/commands/api/invitation/list.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/api/invitation/list.ts)_
 
 ## `claire api:project:create`
 
@@ -100,7 +100,7 @@ DESCRIPTION
   Create new project in CLaiRE API
 ```
 
-_See code: [src/commands/api/project/create.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/api/project/create.ts)_
+_See code: [src/commands/api/project/create.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/api/project/create.ts)_
 
 ## `claire api:project:set`
 
@@ -114,7 +114,7 @@ DESCRIPTION
   List users projects and set active project in CLaiRE config.
 ```
 
-_See code: [src/commands/api/project/set.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/api/project/set.ts)_
+_See code: [src/commands/api/project/set.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/api/project/set.ts)_
 
 ## `claire api:project:show [PROJECTID]`
 
@@ -135,7 +135,7 @@ DESCRIPTION
   Show information for CLaiRE project
 ```
 
-_See code: [src/commands/api/project/show.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/api/project/show.ts)_
+_See code: [src/commands/api/project/show.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/api/project/show.ts)_
 
 ## `claire api:question:show [QUESTIONID]`
 
@@ -157,7 +157,7 @@ DESCRIPTION
   Show details for CLaiRE question
 ```
 
-_See code: [src/commands/api/question/show.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/api/question/show.ts)_
+_See code: [src/commands/api/question/show.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/api/question/show.ts)_
 
 ## `claire ask`
 
@@ -184,7 +184,7 @@ EXAMPLES
   $ claire ask -p "Help me combine these files:" -F path/to/file1.ts -F path/to/file2.ts
 ```
 
-_See code: [src/commands/ask.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/ask.ts)_
+_See code: [src/commands/ask.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/ask.ts)_
 
 ## `claire config`
 
@@ -202,7 +202,7 @@ DESCRIPTION
   View current or set new CLaiRE configuration values.
 ```
 
-_See code: [src/commands/config.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/config.ts)_
+_See code: [src/commands/config.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/config.ts)_
 
 ## `claire help [COMMAND]`
 
@@ -236,7 +236,7 @@ DESCRIPTION
   Display current project and configuration information.
 ```
 
-_See code: [src/commands/info.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/info.ts)_
+_See code: [src/commands/info.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/info.ts)_
 
 ## `claire init`
 
@@ -250,7 +250,7 @@ DESCRIPTION
   Initialize CLaiRE CLI.
 ```
 
-_See code: [src/commands/init.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.4/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/netuoso/CLaiRE/blob/v0.0.5/src/commands/init.ts)_
 
 ## `claire plugins`
 
