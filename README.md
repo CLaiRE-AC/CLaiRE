@@ -175,7 +175,7 @@ DESCRIPTION
   Send a prompt to CLaiRE API and retrieve a response.
 
 EXAMPLES
-  $ claire ask -p "How do I add ActiveAdmin to a Rails 7 app?
+  $ claire ask -p "How do I add ActiveAdmin to a Rails 7 app?"
 
   $ claire ask -p "Refactor this file" -F path/to/src/file.ts
 
