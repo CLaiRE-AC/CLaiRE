@@ -64,9 +64,13 @@ export default class Project extends Command {
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 
-			this.log(chalk.whiteBright(`\n${"*".repeat(30)} Project (${response.data?.project?.name}): ${"*".repeat(30)}`))
-			this.log(chalk.cyan(JSON.stringify(response.data?.project, null, 2)));
-			this.log(chalk.whiteBright(`${"*".repeat(80)}\n`));
+			this.log(
+				chalk.cyan(
+					JSON.stringify(
+						Object.assign(response.data?.project, { question_ids: response.data?.question_ids.reverse() }), null, 2
+					)
+				)
+			);
 
 		} catch (error: any) {
 		    if (axios.isAxiosError(error)) {
