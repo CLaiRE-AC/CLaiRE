@@ -12,6 +12,9 @@ export type ConfigData = {
   project?: {
     id?: string;
     name?: string;
+    description?: string;
+    ai_model?: string;
+    system_message?: object;
   };
 };
 

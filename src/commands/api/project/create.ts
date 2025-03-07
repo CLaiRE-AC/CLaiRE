@@ -19,17 +19,27 @@ export default class Project extends Command {
 			this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
-		const answers = await inquirer.prompt([
-			{ name: 'name', message: 'Enter project name:', type: 'input', when: !flags.name },
-			{ name: 'description', message: 'Enter project description:', type: 'input', when: !flags.description }
-		]);
-
-		const payload = {
-			project: {
-				name: flags.name || answers.name,
-				description: flags.description || answers.description
-			},
-		};
+        const ai_models = ["o3-mini", "o1-mini", "gpt-4o-mini", "gpt-4o", "chatgpt-4o-latest"]
+        const answers = await inquirer.prompt([
+            { name: 'name', message: 'Enter project name:', type: 'input' },
+            { name: 'description', message: 'Enter project description:', type: 'input' },
+            {
+                name: 'ai_model',
+                type: 'list',
+                message: 'Select an AI model for this project:',
+                choices: ai_models.map((model) => ({ name: model, value: model })),
+                pageSize: 10
+            },
+            { name: 'system_message', message: 'Enter project system_message (optional):', type: 'input' }
+        ]);
+        const payload = {
+            project: {
+                name: answers.name,
+                description: answers.description,
+                ai_model: answers.ai_model,
+                system_message: { role: "developer", content: answers.system_message }
+            }
+        };
 
 		const response = await axios.post(`${apiHost}/api/projects`, payload, {
 			headers: { Authorization: `Bearer ${authToken}` }
