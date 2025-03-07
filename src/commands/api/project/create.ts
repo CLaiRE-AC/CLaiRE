@@ -19,7 +19,7 @@ export default class Project extends Command {
 			this.error("Missing CLaiRE API token. Set it using `claire config -k YOUR_AUTH_TOKEN`.");
 		}
 
-        const ai_models = ["o3-mini", "o1-mini", "gpt-4o-mini", "gpt-4o", "chatgpt-4o-latest"]
+        const ai_models = ["o3-mini", "o1-mini", "gpt-4o-mini", "gpt-4o", "chatgpt-4o-latest"];
         const answers = await inquirer.prompt([
             { name: 'name', message: 'Enter project name:', type: 'input' },
             { name: 'description', message: 'Enter project description:', type: 'input' },
@@ -27,7 +27,7 @@ export default class Project extends Command {
                 name: 'ai_model',
                 type: 'list',
                 message: 'Select an AI model for this project:',
-                choices: ai_models.map((model) => ({ name: model, value: model })),
+                choices: ai_models.map((model, index) => ({ name: model, value: index })),
                 pageSize: 10
             },
             { name: 'system_message', message: 'Enter project system_message (optional):', type: 'input' }
