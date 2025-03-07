@@ -1,5 +1,9 @@
 site_name: CLaiRE CLI Documentation
 nav:
-  - Home: index.md
   - Application: https://claire.ac
   - Github: https://github.com/CLaiRE-AC/CLaiRE
+  - Documention Home: index.md
+  - Models Overview: ai-models/OVERVIEW.md
+  - Code Refactoring: ai-models/REFACTORING.md
+  - ask.ts Source File: ai-models/code-files/ask.ts.md
+
