@@ -12,6 +12,7 @@ export default class Ask extends Command {
   static flags = {
     prompt: Flags.string({ char: "p", description: "Prompt to send" }),
     inputFile: Flags.string({ char: "F", description: "Path to file(s) containing the question input", multiple: true }),
+    contextIds: Flags.string({ char: "c", description: "Comma-separated list of context IDs", multiple: true }),
   };
 
   static examples = [
@@ -19,6 +20,7 @@ export default class Ask extends Command {
     '<%= config.bin %> <%= command.id %> -p "Refactor this file" -F path/to/src/file.ts',
     '<%= config.bin %> <%= command.id %> -F path/to/input.txt',
     '<%= config.bin %> <%= command.id %> -p "Help me combine these files:" -F path/to/file1.ts -F path/to/file2.ts',
+    '<%= config.bin %> <%= command.id %> -p "Analyze this code" -c 123 -c 456',
   ];
 
   async run() {
@@ -35,14 +37,14 @@ export default class Ask extends Command {
     }
 
     let content = await this.getInitialQuestion(flags);
-    let contextIds: number[] = [];
+    let contextIds: number[] = this.parseContextIds(flags.contextIds);
 
     while (true) {
       try {
         const questionId = await this.submitQuestion(apiHost, authToken, projectId, content, contextIds);
         if (!questionId) return;
 
-        contextIds.push(questionId);
+        contextIds.push(questionId); // Append new question ID to context
 
         const response = await this.pollForResponse(apiHost, authToken, questionId);
 
@@ -153,5 +155,16 @@ export default class Ask extends Command {
     ]);
 
     return userPrompt.trim();
+  }
+
+  private parseContextIds(contextIds: string[] | undefined): number[] {
+    if (!contextIds || contextIds.length === 0) return [];
+
+    try {
+      return contextIds.flatMap(id => id.split(",")).map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+    } catch {
+      this.error("❌ Invalid context IDs provided. Please ensure they are numbers.");
+      return [];
+    }
   }
 }
