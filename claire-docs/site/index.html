@@ -123,6 +123,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#claire-apiprojectupdate" class="nav-link">claire api:project:update</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#claire-apiquestionshow-questionid" class="nav-link">claire api:question:show [QUESTIONID]</a>
               <ul class="nav flex-column">
               </ul>
@@ -213,7 +217,7 @@
 $ claire COMMAND
 running command...
 $ claire (--version)
-@claire-ac/cli/0.1.0 darwin-arm64 node-v22.14.0
+@claire-ac/cli/0.2.0 darwin-arm64 node-v22.14.0
 $ claire --help [COMMAND]
 USAGE
   $ claire COMMAND
@@ -228,6 +232,7 @@ USAGE
 <li><a href="#claire-apiprojectcreate"><code>claire api:project:create</code></a></li>
 <li><a href="#claire-apiprojectset"><code>claire api:project:set</code></a></li>
 <li><a href="#claire-apiprojectshow-projectid"><code>claire api:project:show [PROJECTID]</code></a></li>
+<li><a href="#claire-apiprojectupdate"><code>claire api:project:update</code></a></li>
 <li><a href="#claire-apiquestionshow-questionid"><code>claire api:question:show [QUESTIONID]</code></a></li>
 <li><a href="#claire-ask"><code>claire ask</code></a></li>
 <li><a href="#claire-config"><code>claire config</code></a></li>
@@ -256,7 +261,7 @@ ARGUMENTS
 DESCRIPTION
   Send CLaiRE invitation to a new user.
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/api/invitation/create.ts">src/commands/api/invitation/create.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/api/invitation/create.ts">src/commands/api/invitation/create.ts</a></em></p>
 <h2 id="claire-apiinvitationlist"><code>claire api:invitation:list</code></h2>
 <p>Show sent CLaiRE invitations.</p>
 <pre><code>USAGE
@@ -265,7 +270,7 @@ DESCRIPTION
 DESCRIPTION
   Show sent CLaiRE invitations.
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/api/invitation/list.ts">src/commands/api/invitation/list.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/api/invitation/list.ts">src/commands/api/invitation/list.ts</a></em></p>
 <h2 id="claire-apiprojectcreate"><code>claire api:project:create</code></h2>
 <p>Create new project in CLaiRE API</p>
 <pre><code>USAGE
@@ -278,7 +283,7 @@ FLAGS
 DESCRIPTION
   Create new project in CLaiRE API
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/api/project/create.ts">src/commands/api/project/create.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/api/project/create.ts">src/commands/api/project/create.ts</a></em></p>
 <h2 id="claire-apiprojectset"><code>claire api:project:set</code></h2>
 <p>List users projects and set active project in CLaiRE config.</p>
 <pre><code>USAGE
@@ -287,7 +292,7 @@ DESCRIPTION
 DESCRIPTION
   List users projects and set active project in CLaiRE config.
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/api/project/set.ts">src/commands/api/project/set.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/api/project/set.ts">src/commands/api/project/set.ts</a></em></p>
 <h2 id="claire-apiprojectshow-projectid"><code>claire api:project:show [PROJECTID]</code></h2>
 <p>Show information for CLaiRE project</p>
 <pre><code>USAGE
@@ -303,7 +308,16 @@ FLAGS
 DESCRIPTION
   Show information for CLaiRE project
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/api/project/show.ts">src/commands/api/project/show.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/api/project/show.ts">src/commands/api/project/show.ts</a></em></p>
+<h2 id="claire-apiprojectupdate"><code>claire api:project:update</code></h2>
+<p>Update project information in CLaiRE API</p>
+<pre><code>USAGE
+  $ claire api:project:update
+
+DESCRIPTION
+  Update project information in CLaiRE API
+</code></pre>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/api/project/update.ts">src/commands/api/project/update.ts</a></em></p>
 <h2 id="claire-apiquestionshow-questionid"><code>claire api:question:show [QUESTIONID]</code></h2>
 <p>Show details for CLaiRE question</p>
 <pre><code>USAGE
@@ -320,7 +334,7 @@ FLAGS
 DESCRIPTION
   Show details for CLaiRE question
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/api/question/show.ts">src/commands/api/question/show.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/api/question/show.ts">src/commands/api/question/show.ts</a></em></p>
 <h2 id="claire-ask"><code>claire ask</code></h2>
 <p>Send a prompt to CLaiRE API and retrieve a response.</p>
 <pre><code>USAGE
@@ -345,7 +359,7 @@ EXAMPLES
 
   $ claire ask -p &quot;Analyze this code&quot; -c 123 -c 456
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/ask.ts">src/commands/ask.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/ask.ts">src/commands/ask.ts</a></em></p>
 <h2 id="claire-config"><code>claire config</code></h2>
 <p>View current or set new CLaiRE configuration values.</p>
 <pre><code>USAGE
@@ -358,7 +372,7 @@ FLAGS
 DESCRIPTION
   View current or set new CLaiRE configuration values.
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/config.ts">src/commands/config.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/config.ts">src/commands/config.ts</a></em></p>
 <h2 id="claire-help-command"><code>claire help [COMMAND]</code></h2>
 <p>Display help for claire.</p>
 <pre><code>USAGE
@@ -382,7 +396,7 @@ DESCRIPTION
 DESCRIPTION
   Display current project and configuration information.
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/info.ts">src/commands/info.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/info.ts">src/commands/info.ts</a></em></p>
 <h2 id="claire-init"><code>claire init</code></h2>
 <p>Initialize CLaiRE CLI.</p>
 <pre><code>USAGE
@@ -391,7 +405,7 @@ DESCRIPTION
 DESCRIPTION
   Initialize CLaiRE CLI.
 </code></pre>
-<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.1.0/src/commands/init.ts">src/commands/init.ts</a></em></p>
+<p><em>See code: <a href="https://github.com/netuoso/CLaiRE/blob/v0.2.0/src/commands/init.ts">src/commands/init.ts</a></em></p>
 <h2 id="claire-plugins"><code>claire plugins</code></h2>
 <p>List installed plugins.</p>
 <pre><code>USAGE
@@ -717,5 +731,5 @@ DESCRIPTION
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-03-08 05:48:45.966847+00:00
+Build Date UTC : 2025-03-08 22:24:04.791348+00:00
 -->
