@@ -2,10 +2,8 @@
 
 ## Installing
 
-- #### MacOS
-	- `brew install @claire-ac/cli`
-- #### System Agnostic
-	- `npm install -g @claire-ac/cli (requires node+npm)`
+- #### NPMjs
+	- `npm install -g @claire-ac/cli`
 
 ## Initialize the CLI
 - `claire init`
