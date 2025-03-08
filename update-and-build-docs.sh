@@ -17,5 +17,7 @@ git checkout gh-pages
 echo "docs.claire.ac" > CNAME
 git add CNAME
 git commit -m "CNAME"
+git push
 git checkout main
+git push
 echo "Finished updating, building, and deploying documentation"
