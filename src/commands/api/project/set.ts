@@ -32,9 +32,9 @@ export default class Project extends Command {
 					type: 'list',
 					name: 'selectedProject',
 					message: 'Select a project:',
-					choices: projects.sort((a: any, b: any) => (b.id - a.id)).map((project: { id: string; name: string, description: string }) => ({
+					choices: projects.sort((a: any, b: any) => (b.id - a.id)).map((project: { id: string; name: string, description: string, ai_model: string, system_message: object }) => ({
 						name: project.name,
-						value: {id: project.id, name: project.name, description: project.description}
+						value: {id: project.id, name: project.name, description: project.description, ai_model: project.ai_model, system_message: project.system_message}
 					})),
 					pageSize: 10
 				}

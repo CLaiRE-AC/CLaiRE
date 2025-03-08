@@ -27,7 +27,7 @@ export default class Project extends Command {
                 name: 'ai_model',
                 type: 'list',
                 message: 'Select an AI model for this project:',
-                choices: ai_models.map((model, index) => ({ name: model, value: index })),
+                choices: ai_models.map((model) => ({ name: model, value: model })),
                 pageSize: 10
             },
             { name: 'system_message', message: 'Enter project system_message (optional):', type: 'input' }
