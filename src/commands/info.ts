@@ -15,20 +15,6 @@ export default class Info extends Command {
 
     this.log(chalk.bold(`\n📍 CLaiRE CLI Information\n`));
 
-    // Read Config Information
-    try {
-      const clairePackageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
-      const claireOutput = {
-        "name": "@claire-ac/cli",
-        "description": "Command Line AI Request Expect",
-        "version": "0.0.1",
-        "author": "Andrew Chaney (netuoso)"
-      }
-      this.log(chalk.whiteBright(JSON.stringify(claireOutput, null, 2))); // Pretty print
-    } catch (error) {
-      this.log(chalk.red("\n⚠️ Failed to read config.json. Ensure it's valid JSON."));
-    }
-
     // Display the directory storing configuration files
     this.log(chalk.cyan(`\n📂 Config Directory: ${claireDir}`));
 
