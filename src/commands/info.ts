@@ -1,5 +1,4 @@
 import { Command } from "@oclif/core";
-import fs from "fs";
 import path from "path";
 import os from "os";
 import chalk from "chalk";
@@ -13,7 +12,7 @@ export default class Info extends Command {
     const configFilePath = path.join(claireDir, "config.json");
     const executablePath = process.execPath;
 
-    this.log(chalk.bold(`\n📍 CLaiRE CLI Information\n`));
+    this.log(chalk.bold(`\n📍 CLaiRE CLI Information`));
 
     // Display the directory storing configuration files
     this.log(chalk.cyan(`\n📂 Config Directory: ${claireDir}`));
