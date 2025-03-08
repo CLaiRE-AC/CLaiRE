@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import chalk from "chalk";
+import { loadConfig, saveConfig} from "../utils/config.js";
 
 export default class Init extends Command {
   static description = "Initialize CLaiRE CLI.";
@@ -10,8 +11,7 @@ export default class Init extends Command {
   async run() {
     // Define paths
     const claireDir = path.join(os.homedir(), ".claire");
-    const projectsDir = path.join(claireDir, "projects");
-    const projectDir = path.join(projectsDir, "default");
+    const config = loadConfig();
 
     // Ensure ~/.claire directory exists
     if (!fs.existsSync(claireDir)) {
@@ -19,8 +19,13 @@ export default class Init extends Command {
       this.log(chalk.green(`✅ Created 'CLaiRE' directory at ${claireDir}`));
     }
 
-    this.log("We should walk user thru setting up their account. Maybe open browser for login and subscription.")
+    saveConfig({
+      api: {
+        host: config.api?.host || "https://claire.ac",
+        token: config.api?.token,
+      }
+    });
 
-    this.log(chalk.blue(`🎯 CLaiRE successfully initialized.`));
+    this.log("✅ CLaiRE CLI Initialized.");
   }
 }
