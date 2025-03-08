@@ -3,7 +3,15 @@ import axios from 'axios';
 import inquirer from 'inquirer';
 import { loadConfig, saveConfig } from '../../../utils/config.js';
 
-export default class Project extends Command {
+export type ProjectType = {
+	id?: string;
+	name?: string;
+	description?: string;
+	ai_model?: string;
+	system_message?: object;
+};
+
+export default class ProjectSet extends Command {
 	static description = 'List users projects and set active project in CLaiRE config.';
 
 	async run() {
@@ -32,8 +40,8 @@ export default class Project extends Command {
 					type: 'list',
 					name: 'selectedProject',
 					message: 'Select a project:',
-					choices: projects.sort((a: any, b: any) => (b.id - a.id)).map((project: { id: string; name: string, description: string, ai_model: string, system_message: object }) => ({
-						name: project.name,
+					choices: projects.sort((a: any, b: any) => (b.id - a.id)).map((project: ProjectType) => ({
+						name: `${project.id}: ${project.name}`,
 						value: {id: project.id, name: project.name, description: project.description, ai_model: project.ai_model, system_message: project.system_message}
 					})),
 					pageSize: 10

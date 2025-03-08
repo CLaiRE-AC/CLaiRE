@@ -3,7 +3,7 @@ import axios from 'axios';
 import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
 
-export default class Project extends Command {
+export default class ProjectCreate extends Command {
 	static description = 'Create new project in CLaiRE API';
 
 	static flags = {
@@ -12,7 +12,7 @@ export default class Project extends Command {
 	};
 
 	async run() {
-		const { flags } = await this.parse(Project);
+		const { flags } = await this.parse(ProjectCreate);
 		const { token: authToken, host: apiHost } = loadConfig().api;
 
 		if (!authToken) {

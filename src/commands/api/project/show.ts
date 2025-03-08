@@ -4,7 +4,7 @@ import inquirer from 'inquirer';
 import { loadConfig } from "../../../utils/config.js";
 import chalk from "chalk";
 
-export default class Project extends Command {
+export default class ProjectShow extends Command {
 	static description = 'Show information for CLaiRE project';
 
 	static args = {
@@ -17,7 +17,7 @@ export default class Project extends Command {
 	};
 
 	async run() {
-		const { args, flags } = await this.parse(Project);
+		const { args, flags } = await this.parse(ProjectShow);
 		const { token: authToken, host: apiHost } = loadConfig().api;
 
 		if (!authToken) {
